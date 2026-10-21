@@ -130,9 +130,9 @@ The Mac releases every held key and button when a phone disconnects.
   sandbox forbids input injection), link to it, and mention App Store Review Guideline 4.2.7
   and existing apps in this category (Remote Mouse, Mobile Mouse).
 - **Mac → direct download.** The Mac App Store sandbox blocks the event injection this app
-  needs, so it ships as a notarized zip attached to a GitHub Release:
+  needs, so it ships as a notarized DMG attached to a GitHub Release:
   `SIGN_IDENTITY="Developer ID Application: …" Mac/release.sh` (see the script for the
-  one-time `notarytool` credential setup), then `gh release create v1.0 Mac/build/Couchpad-mac.zip`.
+  one-time `notarytool` credential setup), then `gh release create v1.0 Mac/build/Couchpad-1.0.dmg`.
 - **Windows → direct download.** Zip the `publish` folder from the command above and attach
   it to the same release. Unsigned builds trigger SmartScreen's "unknown publisher" warning;
   an Authenticode certificate removes it but isn't required.

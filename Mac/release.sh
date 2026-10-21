@@ -1,17 +1,24 @@
 #!/bin/zsh
-# Signs with Developer ID, notarizes, staples and zips the Mac app for direct download.
-# One-time setup:  xcrun notarytool store-credentials couchpad --apple-id you@example.com --team-id TEAMID
+# Signs with Developer ID, packages a DMG (app + Applications shortcut), notarizes and staples it.
+# One-time setup:  xcrun notarytool store-credentials couchpad --key AuthKey.p8 --key-id ID --issuer UUID
 # Then:            SIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" ./release.sh
-set -e
+set -e -o pipefail
 cd "$(dirname "$0")"
 : "${SIGN_IDENTITY:?Set SIGN_IDENTITY to your 'Developer ID Application: …' identity}"
 ./build.sh
 APP="build/Couchpad.app"
-ZIP="build/Couchpad-mac.zip"
-rm -f "$ZIP"
-ditto -c -k --keepParent "$APP" "$ZIP"
-xcrun notarytool submit "$ZIP" --keychain-profile couchpad --wait
-xcrun stapler staple "$APP"
-rm -f "$ZIP"
-ditto -c -k --keepParent "$APP" "$ZIP"
-echo "Ready to upload: $PWD/$ZIP"
+VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Contents/Info.plist")
+DMG="build/Couchpad-$VERSION.dmg"
+STAGE="build/dmg"
+
+rm -rf "$STAGE" "$DMG"
+mkdir -p "$STAGE"
+cp -R "$APP" "$STAGE/"
+ln -s /Applications "$STAGE/Applications"
+hdiutil create -volname "Couchpad" -srcfolder "$STAGE" -ov -format UDZO -quiet "$DMG"
+rm -rf "$STAGE"
+
+codesign --force --sign "$SIGN_IDENTITY" "$DMG"
+xcrun notarytool submit "$DMG" --keychain-profile couchpad --wait
+xcrun stapler staple "$DMG"
+echo "Ready to upload: $PWD/$DMG"
