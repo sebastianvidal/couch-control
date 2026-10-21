@@ -1,0 +1,50 @@
+# Couchpad — working notes for Claude
+
+Three apps, one protocol: `iOS/` (SwiftUI), `Mac/` (SwiftPM menu-bar app), `Windows/` (.NET 8
+tray app). `docs/` is the GitHub Pages site. README.md is the user-facing overview; keep it true.
+
+## Releases
+
+### Mac (direct download, notarized DMG)
+1. Bump `CFBundleShortVersionString` in `Mac/Info.plist`.
+2. `SIGN_IDENTITY="Developer ID Application: Sebastian Vidal (HQZM8YK4DC)" Mac/release.sh`
+   — clean-builds, signs, packages `Mac/build/Couchpad-<version>.dmg`, notarizes (keychain
+   profile `couchpad`, already stored), staples. ~5 minutes, mostly Apple's queue.
+3. `gh release create v<version> Mac/build/Couchpad-<version>.dmg --title "Couchpad <version> — Mac companion" --notes "..."`
+4. Update the DMG filename in `docs/index.html` (two links) and README.md, commit, push.
+   Pages deploys in ~1 minute; verify with `curl -s https://sebastianvidal.github.io/couchpad/ | grep dmg`.
+5. If the Mac app was running, relaunch it from `Mac/build/Couchpad.app` so the user runs the
+   release build.
+
+Never ship a build whose `swift build` errored; `build.sh` exits non-zero on failure for that reason.
+
+### iPhone (App Store / TestFlight)
+- Xcode: open `iOS/Couchpad.xcodeproj`, destination *Any iOS Device*, Product → Archive,
+  Distribute → App Store Connect → Upload. The user does this; it needs their Apple ID session.
+- The build number is stamped automatically (UTC `YYYYMMDDHHMM`) by a build phase; only
+  `MARKETING_VERSION` in the pbxproj needs bumping for a new version.
+- Team ID lives in `iOS/Config/Local.xcconfig` (git-ignored); never put `DEVELOPMENT_TEAM` in
+  the pbxproj.
+- Listing text and review notes: `docs/app-store-copy.md`.
+
+### Windows
+- `dotnet publish Windows -c Release -r win-x64 --self-contained -p:PublishSingleFile=true`,
+  zip the `publish` folder, attach to the release. Compile-check on macOS with the SDK in the
+  scratchpad (`dotnet build Windows`). Not yet run on a real Windows machine; say so.
+
+## Facts that are easy to get wrong
+- Bundle IDs: iOS `com.seb.Couchpad` (registered in App Store Connect), Mac `com.seb.Couchpad.mac`.
+  Changing either resets pairing tokens and (Mac) Accessibility trust.
+- Bonjour type `_couchpad._tcp`, port 48123, pairing URL scheme `couchpad://`.
+- Local Mac builds sign with the Apple Development cert so Accessibility trust survives
+  rebuilds; release builds use Developer ID.
+- Arrow-key events must carry the Fn + keypad flags or macOS hotkeys (Mission Control) ignore them.
+- Hosts must ignore lines that arrive before `hello`; answering `nope` makes the phone drop its token.
+- Testing input against the real Mac moves the user's cursor; keep it to a single swipe. Never
+  run a stand-in host on port 48123 while the user may be using the app — their phone will
+  connect to it.
+- The Mac app's pairing code is printed to stderr on launch; run the binary directly with
+  stderr captured to read it when testing pairing.
+
+## Commits
+Attribution trailer per the session's reminder. Push to `main` directly; no PRs needed for now.
