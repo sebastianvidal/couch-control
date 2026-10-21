@@ -72,7 +72,7 @@ struct ContentView: View {
             default:
                 VStack(spacing: 10) {
                     Image(systemName: "wifi.exclamationmark").font(.title2)
-                    Text("Open Couch Control on your Mac\n(same Wi-Fi)")
+                    Text("Open Couch Control on your Mac or PC\n(same Wi-Fi)")
                         .multilineTextAlignment(.center)
                         .font(.footnote)
                     Button("How to set up") { showSetup = true }
@@ -90,7 +90,9 @@ struct ContentView: View {
             Image(systemName: "lock.shield").font(.largeTitle).foregroundStyle(.secondary)
             Text("Pair with \(client.macName)")
                 .font(.headline)
-            Text("Click the cursor icon in the Mac's menu bar and enter the 6-digit pairing code.")
+            Text(client.hostPlatform == .windows
+                 ? "Click the Couch Control icon in the Windows system tray and enter the 6-digit pairing code."
+                 : "Click the cursor icon in the Mac's menu bar and enter the 6-digit pairing code.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -153,7 +155,7 @@ struct ContentView: View {
                         Button(service.name) { client.connect(to: service); showSettings = false }
                     }
                     HStack {
-                        TextField("Mac IP (if Bonjour fails)", text: $settings.manualHost)
+                        TextField("Computer IP (if discovery fails)", text: $settings.manualHost)
                             .keyboardType(.numbersAndPunctuation)
                             .autocorrectionDisabled()
                         Button("Connect") { client.connect(host: settings.manualHost); showSettings = false }
@@ -169,7 +171,7 @@ struct ContentView: View {
                 }
                 Section("About") {
                     Button("Setup guide & gestures") { showSettings = false; showSetup = true }
-                    Link("Get the free Mac app", destination: Links.macDownload)
+                    Link("Get the free Mac / Windows app", destination: Links.macDownload)
                     Link("Privacy policy", destination: Links.privacy)
                 }
             }

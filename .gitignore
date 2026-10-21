@@ -10,3 +10,7 @@ iOS/Config/Local.xcconfig
 iOS/CouchControl.xcodeproj/xcuserdata/
 iOS/CouchControl.xcodeproj/project.xcworkspace/xcuserdata/
 .DS_Store
+
+# Windows
+Windows/bin/
+Windows/obj/

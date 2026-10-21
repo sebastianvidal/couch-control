@@ -19,10 +19,16 @@ final class Client: ObservableObject {
         case searching, connecting, needsCode, wrongCode, paired, disconnected
     }
 
+    enum HostPlatform { case mac, windows }
+
     @Published private(set) var services: [Service] = []
-    @Published private(set) var status = "Looking for your Mac…"
+    @Published private(set) var status = "Looking for your computer…"
     @Published private(set) var phase: Phase = .searching
     @Published private(set) var macName = ""
+    @Published private(set) var hostPlatform: HostPlatform = .mac
+
+    /// "Mac" or "PC", for UI text about the paired computer.
+    var hostNoun: String { hostPlatform == .windows ? "PC" : "Mac" }
 
     var isConnected: Bool { phase == .paired }
 
@@ -136,7 +142,11 @@ final class Client: ObservableObject {
 
     private func handle(_ line: String) {
         if line.hasPrefix("ok ") {
-            defaults.set(String(line.dropFirst(3)), forKey: tokenKey(macName))
+            // "ok <token> [mac|windows]"; older Mac builds send no platform.
+            let parts = line.split(separator: " ")
+            guard parts.count >= 2 else { return }
+            defaults.set(String(parts[1]), forKey: tokenKey(macName))
+            hostPlatform = parts.count >= 3 && parts[2] == "windows" ? .windows : .mac
             phase = .paired
             status = "Connected to \(macName)"
         } else if line == "nope" {

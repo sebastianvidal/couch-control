@@ -2,7 +2,7 @@ import Foundation
 import Network
 
 /// TCP listener advertised over Bonjour. The first line from a phone must be
-/// `hello <code-or-token>`; the Mac answers `ok <token>` or `nope`. After that each line
+/// `hello <code-or-token>`; the Mac answers `ok <token> mac` or `nope`. After that each line
 /// is one input command (see Injector.handle).
 final class Server {
     private let listener: NWListener
@@ -92,7 +92,7 @@ final class Server {
         let credential = String(line.dropFirst(6)).trimmingCharacters(in: .whitespaces)
         if let token = Pairing.shared.authenticate(credential) {
             authenticated.insert(id)
-            send("ok \(token)", to: connection)
+            send("ok \(token) mac", to: connection)
             report()
         } else {
             send("nope", to: connection)

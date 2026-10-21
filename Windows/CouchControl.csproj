@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>CouchControl</AssemblyName>
+    <RootNamespace>CouchControl</RootNamespace>
+    <ApplicationIcon>AppIcon.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <Authors>Sebastian Vidal</Authors>
+    <Product>Couch Control</Product>
+    <!-- Lets the project build on macOS/Linux for compile checks. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Makaretu.Dns.Multicast" Version="0.27.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="AppIcon.ico" />
+  </ItemGroup>
+
+</Project>

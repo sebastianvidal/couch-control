@@ -1,15 +1,16 @@
 # Couch Control
 
-Your iPhone as a trackpad and keyboard for your Mac, over local Wi-Fi. Made for gaming on a
-Mac plugged into the TV without a mouse and keyboard on the couch.
+Your iPhone as a trackpad and keyboard for your Mac or Windows PC, over local Wi-Fi. Made
+for gaming on a computer plugged into the TV without a mouse and keyboard on the couch.
 
-Swift on both sides, no accounts, no cloud: the phone finds the Mac with Bonjour, pairs once
-with a 6-digit code, and talks to it over one TCP socket on your network.
+No accounts, no cloud: the phone finds the computer with Bonjour, pairs once with a 6-digit
+code, and talks to it over one TCP socket on your network.
 
 ```
-Mac/     SwiftPM menu-bar app. Advertises _couchctl._tcp on port 48123, injects CGEvents.
-iOS/     Xcode project. Trackpad on top, the iOS keyboard below, plus the keys it lacks.
-Tools/   make-icons.swift renders both app icons.
+Mac/       SwiftPM menu-bar app. Advertises _couchctl._tcp on port 48123, injects CGEvents.
+Windows/   .NET 8 tray app. Same protocol and port, injects via SendInput.
+iOS/       Xcode project. Trackpad on top, the iOS keyboard below, plus the keys it lacks.
+Tools/     make-icons.swift renders the app icons.
 ```
 
 ## Build the Mac app
@@ -25,6 +26,26 @@ the pointer and type. Local builds are ad-hoc signed, so macOS may ask again aft
 
 Menu: connection status · pairing code · address · Accessibility state · Launch at Login ·
 Forget Paired iPhones.
+
+## Build the Windows app
+
+Needs the [.NET 8 SDK](https://dotnet.microsoft.com/download). On Windows:
+
+```bash
+dotnet publish Windows -c Release -r win-x64 --self-contained -p:PublishSingleFile=true
+```
+
+Run `Windows/bin/Release/net8.0-windows/win-x64/publish/CouchControl.exe`. It lives in the
+system tray; right-click for the pairing code, address and "Start with Windows". The first
+run asks to allow it through Windows Firewall — allow it on **private** networks, or the phone
+can't reach it. No other permission is needed: `SendInput` works for any app, including games
+that read raw input (DirectInput / XInput games see the scan codes it sends).
+
+The project also compiles on macOS/Linux (`dotnet build Windows`) for checking changes, but
+only runs on Windows.
+
+**Honest note:** the Windows app was written and compile-checked on a Mac, not yet run on a
+real Windows machine. If something misbehaves, open an issue.
 
 ## Build the iPhone app
 
@@ -55,6 +76,7 @@ with a token can send input.
 | iOS keyboard               | Typing, backspace, return as real key presses |
 | esc, tab, arrows, F-keys, WASD strip | Key down while touched, up on release |
 | ⇧ ⌃ ⌥ ⌘ fn                 | Toggle: held until tapped again; typed letters become shortcuts (⌘C etc.) |
+| On a Windows host          | The same keys show as Ctrl / Alt / Win; fn is hidden |
 | Keyboard button            | Hide / show the iOS keyboard to enlarge the trackpad |
 
 Pointer speed, scroll speed, natural scrolling and tap-to-drag are in the gear menu.
@@ -64,7 +86,7 @@ Pointer speed, scroll speed, natural scrolling and tap-to-drag are in the gear m
 Newline-terminated text lines over TCP. The phone must authenticate first:
 
 ```
-hello <code-or-token>   → Mac answers  ok <token>  or  nope
+hello <code-or-token>   → host answers  ok <token> mac|windows   or   nope
 ```
 
 Then, one command per line:
@@ -94,6 +116,9 @@ The Mac releases every held key and button when a phone disconnects.
   needs, so it ships as a notarized zip attached to a GitHub Release:
   `SIGN_IDENTITY="Developer ID Application: …" Mac/release.sh` (see the script for the
   one-time `notarytool` credential setup), then `gh release create v1.0 Mac/build/CouchControl-mac.zip`.
+- **Windows → direct download.** Zip the `publish` folder from the command above and attach
+  it to the same release. Unsigned builds trigger SmartScreen's "unknown publisher" warning;
+  an Authenticode certificate removes it but isn't required.
 
 ## License
 

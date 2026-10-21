@@ -8,6 +8,7 @@ struct Key: Identifiable {
     var isModifier = false
     var symbol: String? = nil // SF Symbol instead of text
     var small = false
+    var windowsLabel: String? = nil // text shown when the host is a PC; "" hides the key
 }
 
 /// Keys the iOS keyboard doesn't have. Plain keys send key-down on touch and key-up on
@@ -20,9 +21,9 @@ struct KeyStripView: View {
     private let strip: [Key] = [
         Key(label: "esc", code: 53, width: 1.2, small: true),
         Key(label: "", code: 48, symbol: "arrow.right.to.line"),
-        Key(label: "", code: 59, isModifier: true, symbol: "control"),
-        Key(label: "", code: 58, isModifier: true, symbol: "option"),
-        Key(label: "", code: 55, isModifier: true, symbol: "command"),
+        Key(label: "", code: 59, isModifier: true, symbol: "control", windowsLabel: "Ctrl"),
+        Key(label: "", code: 58, isModifier: true, symbol: "option", windowsLabel: "Alt"),
+        Key(label: "", code: 55, isModifier: true, symbol: "command", windowsLabel: "Win"),
         Key(label: "", code: 56, isModifier: true, symbol: "shift"),
         Key(label: "", code: 123, symbol: "arrowtriangle.left.fill"),
         Key(label: "", code: 126, symbol: "arrowtriangle.up.fill"),
@@ -37,7 +38,7 @@ struct KeyStripView: View {
     private let gameKeys: [Key] = [
         Key(label: "w", code: 13), Key(label: "a", code: 0), Key(label: "s", code: 1), Key(label: "d", code: 2),
         Key(label: "space", code: 49, width: 2, small: true), Key(label: "e", code: 14), Key(label: "r", code: 15),
-        Key(label: "f", code: 3), Key(label: "q", code: 12), Key(label: "", code: 63, isModifier: true, symbol: "fn", small: true),
+        Key(label: "f", code: 3), Key(label: "q", code: 12), Key(label: "", code: 63, isModifier: true, symbol: "fn", small: true, windowsLabel: ""),
     ]
 
     var body: some View {
@@ -75,14 +76,16 @@ struct KeyStripView: View {
         }
     }
 
-    private func row(_ keys: [Key]) -> some View {
-        GeometryReader { geo in
+    private func row(_ allKeys: [Key]) -> some View {
+        let keys = client.hostPlatform == .windows ? allKeys.filter { $0.windowsLabel != "" } : allKeys
+        return GeometryReader { geo in
             let gap: CGFloat = 4
             let units = keys.reduce(0) { $0 + $1.width }
             let unit = (geo.size.width - gap * CGFloat(keys.count - 1)) / units
             HStack(spacing: gap) {
                 ForEach(keys) { key in
-                    KeyButton(key: key, isHeld: state.heldModifiers.contains(key.code)) {
+                    KeyButton(key: key, isHeld: state.heldModifiers.contains(key.code),
+                              windows: client.hostPlatform == .windows) {
                         press(key)
                     } onUp: {
                         release(key)
@@ -122,6 +125,7 @@ struct KeyStripView: View {
 struct KeyButton: View {
     let key: Key
     let isHeld: Bool
+    var windows = false
     let onDown: () -> Void
     let onUp: () -> Void
     @State private var pressed = false
@@ -131,13 +135,15 @@ struct KeyButton: View {
             RoundedRectangle(cornerRadius: 7, style: .continuous)
                 .fill(pressed || isHeld ? Color.accentColor : Color(.secondarySystemBackground))
             Group {
-                if let symbol = key.symbol {
+                if windows, let text = key.windowsLabel, !text.isEmpty {
+                    Text(text)
+                } else if let symbol = key.symbol {
                     Image(systemName: symbol)
                 } else {
                     Text(key.label)
                 }
             }
-            .font(key.small ? .caption : .body)
+            .font(key.small || (windows && key.windowsLabel != nil) ? .caption : .body)
             .fontWeight(.medium)
             .foregroundStyle(pressed || isHeld ? Color.white : Color.primary)
         }

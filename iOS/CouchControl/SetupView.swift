@@ -16,9 +16,9 @@ struct SetupView: View {
             List {
                 Section {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Your iPhone becomes a trackpad and keyboard for your Mac.")
+                        Text("Your iPhone becomes a trackpad and keyboard for your Mac or Windows PC.")
                             .font(.headline)
-                        Text("Made for the couch: the Mac is plugged into the TV, you're across the room, and you don't want a mouse and keyboard on your lap.")
+                        Text("Made for the couch: the computer is plugged into the TV, you're across the room, and you don't want a mouse and keyboard on your lap.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -26,13 +26,13 @@ struct SetupView: View {
                 }
 
                 Section("Set up in three steps") {
-                    step(1, "Install the free Mac app",
-                         "Download Couch Control for Mac and open it. It lives in the menu bar as a cursor icon.",
-                         link: Links.macDownload, linkTitle: "Download for Mac")
-                    step(2, "Allow Accessibility",
-                         "macOS asks once. This is what lets the Mac app move the pointer and type for you.")
+                    step(1, "Install the free desktop app",
+                         "Download Couch Control for Mac or Windows and open it. On a Mac it lives in the menu bar as a cursor icon; on Windows, in the system tray.",
+                         link: Links.macDownload, linkTitle: "Download for Mac or Windows")
+                    step(2, "Allow it once",
+                         "macOS asks for Accessibility access, which is what lets it move the pointer and type. Windows asks to allow it through the firewall on private networks.")
                     step(3, "Pair",
-                         "Put both devices on the same Wi-Fi. This app finds the Mac by itself; enter the 6-digit code from the Mac's menu-bar icon the first time.")
+                         "Put both devices on the same Wi-Fi. This app finds the computer by itself; enter the 6-digit code from its menu-bar or tray icon the first time.")
                 }
 
                 Section("Gestures") {
