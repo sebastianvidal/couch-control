@@ -1,0 +1,89 @@
+# App Store copy for Couchpad
+
+Paste-ready. Character limits in brackets are App Store Connect's.
+
+## Name [30]
+
+Couchpad
+
+## Subtitle [30]
+
+Trackpad & keyboard for Mac/PC
+
+## Promotional text [170]
+
+Gaming on a Mac plugged into the TV? Leave the mouse and keyboard on the desk. Couchpad turns your iPhone into both, over Wi‑Fi, with nothing to sign up for.
+
+## Description [4000]
+
+Couchpad turns your iPhone into a trackpad and keyboard for your Mac or Windows PC.
+
+It was made for one situation: the computer is plugged into the TV, you're on the couch across the room, and you don't want a mouse and keyboard on your lap. Open Couchpad, and your phone is both.
+
+HOW IT WORKS
+Install the free companion app on your computer (couchpad site, link below). Couchpad finds it on your Wi‑Fi by itself. Pair once by scanning the QR code it shows, and you're in. Everything stays on your local network: no account, no servers, no cloud.
+
+TRACKPAD
+• One finger moves the pointer, tap to click, two-finger tap to right-click
+• Two fingers scroll, tap-then-hold to drag
+• Three-finger swipes open Mission Control, App Exposé and switch Spaces
+• Left and right mouse buttons you can hold while you move
+• Pointer and scroll speed, natural scrolling and tap-to-drag are adjustable
+
+KEYBOARD
+• The regular iPhone keyboard, typing straight to the computer
+• A strip above it with the keys a phone doesn't have: esc, tab, arrows, ⌘, ⌥, ⌃, ⇧ and F1–F12
+• Modifiers toggle and stay held, so ⌘C, ⌥Tab and friends just work
+• Hold-to-press keys for games: WASD, space and more stay down while your finger does
+
+BUILT FOR GAMES
+Pointer movement is sent as raw mouse motion, which is what games use for camera look, and keys are sent as real presses that stay held. Menus, strategy, point-and-click, launchers, Steam Big Picture: all from the couch.
+
+PRIVATE BY DESIGN
+Couchpad collects no data. It asks for Local Network access to find your computer and for the camera only when you scan a pairing code. Only phones you've paired can send input, and you can forget a phone from the computer at any time.
+
+OPEN SOURCE
+The whole thing, including the Mac and Windows apps, is MIT-licensed on GitHub.
+
+REQUIREMENTS
+A Mac (macOS 13 or later) or a Windows 10/11 PC running the free Couchpad companion app, on the same Wi‑Fi network as your iPhone. Get it at https://sebastianvidal.github.io/couchpad/
+
+## Keywords [100]
+
+remote,mouse,touchpad,wireless,mac,pc,windows,tv,couch,controller,cursor,wifi,gaming,steam,presentation
+
+(97 characters. Don't repeat the app name or words already in the subtitle; Apple indexes those separately.)
+
+## What's New (1.0)
+
+First release: trackpad, keyboard, three-finger gestures, QR pairing, Mac and Windows companions.
+
+## Category
+
+Primary: Utilities · Secondary: Productivity
+
+## Support URL
+
+https://sebastianvidal.github.io/couchpad/
+
+## Privacy Policy URL
+
+https://sebastianvidal.github.io/couchpad/privacy.html
+
+## App Review notes
+
+Couchpad is a trackpad/keyboard remote for the user's own computer on the local network, in the same category as Remote Mouse, Mobile Mouse and Unified Remote (App Store Review Guideline 4.2.7, remote desktop clients for user-owned computers on a local network).
+
+Like those apps, it needs a free companion on the computer, because macOS requires Accessibility permission on the Mac itself to inject input; that cannot be done from an iPhone alone and the companion cannot be distributed through the Mac App Store (sandbox). The companion is free, open source and linked from the app's first-run screen: https://sebastianvidal.github.io/couchpad/
+
+To test:
+1. On a Mac on the same Wi‑Fi as the test iPhone, download and open the companion from the link above and grant Accessibility when asked.
+2. Open Couchpad on the iPhone. It finds the Mac automatically and shows a pairing screen.
+3. Click the cursor icon in the Mac's menu bar → "Pairing code" and scan the QR with the Scan button (or type the 6 digits).
+4. Move a finger on the trackpad area: the Mac pointer moves. Type on the keyboard: text appears on the Mac.
+
+Without a companion, the app still launches and offers the setup guide and gesture reference; it cannot do more by nature, as with the other apps in this category.
+
+No account, no login, no data collection. The Local Network permission is used only for Bonjour discovery and the direct connection; the camera only for the pairing QR.
+
+A demo video: <add link>
