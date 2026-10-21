@@ -154,7 +154,13 @@ final class Injector {
             if down { modifiers.insert(flag) } else { modifiers.remove(flag) }
         }
         guard let e = CGEvent(keyboardEventSource: source, virtualKey: code, keyDown: down) else { return }
-        e.flags = modifiers
+        var flags = modifiers
+        if (123...126).contains(code) {
+            // Real arrow keys carry these; system hotkeys like Mission Control (⌃↑) are
+            // defined with the Fn bit and don't match without it.
+            flags.insert([.maskSecondaryFn, .maskNumericPad])
+        }
+        e.flags = flags
         e.post(tap: .cghidEventTap)
         if down { heldKeys.insert(code) } else { heldKeys.remove(code) }
     }
