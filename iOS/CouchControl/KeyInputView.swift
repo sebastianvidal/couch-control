@@ -17,7 +17,7 @@ struct KeyInputView: UIViewRepresentable {
     func makeUIView(context: Context) -> KeyInputUIView {
         let view = KeyInputUIView()
         view.client = client
-        view.state = state
+        view.inputState = state
         return view
     }
 
@@ -32,35 +32,50 @@ struct KeyInputView: UIViewRepresentable {
     }
 }
 
-final class KeyInputUIView: UIView, UIKeyInput {
+/// A real text field (so iOS reliably honors "no autocorrect, no predictions") that never
+/// keeps any text: each keystroke is forwarded and discarded.
+final class KeyInputUIView: UITextField {
     weak var client: Client?
-    weak var state: InputState?
+    weak var inputState: InputState?
 
-    var autocorrectionType: UITextAutocorrectionType = .no
-    var autocapitalizationType: UITextAutocapitalizationType = .none
-    var spellCheckingType: UITextSpellCheckingType = .no
-    var smartQuotesType: UITextSmartQuotesType = .no
-    var smartDashesType: UITextSmartDashesType = .no
-    var smartInsertDeleteType: UITextSmartInsertDeleteType = .no
-    var keyboardType: UIKeyboardType = .asciiCapable
-    var keyboardAppearance: UIKeyboardAppearance = .dark
-    var returnKeyType: UIReturnKeyType = .default
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        autocorrectionType = .no
+        autocapitalizationType = .none
+        spellCheckingType = .no
+        smartQuotesType = .no
+        smartDashesType = .no
+        smartInsertDeleteType = .no
+        if #available(iOS 17.0, *) { inlinePredictionType = .no }
+        textContentType = nil
+        keyboardType = .asciiCapable
+        keyboardAppearance = .dark
+        returnKeyType = .default
+        tintColor = .clear
+        textColor = .clear
+        backgroundColor = .clear
+    }
 
-    override var canBecomeFirstResponder: Bool { true }
-    var hasText: Bool { true }
+    required init?(coder: NSCoder) { fatalError() }
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
-        guard window != nil, state?.keyboardShown != false else { return }
+        guard window != nil, inputState?.keyboardShown != false else { return }
         DispatchQueue.main.async { self.becomeFirstResponder() }
     }
 
-    func insertText(_ text: String) {
+    // No caret, no selection handles, no edit menu.
+    override func caretRect(for position: UITextPosition) -> CGRect { .zero }
+    override func selectionRects(for range: UITextRange) -> [UITextSelectionRect] { [] }
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool { false }
+
+    override func insertText(_ text: String) {
+        // Deliberately not calling super: the field stays empty.
         if text == "\n" {
             tap(36)
             return
         }
-        if let state, !state.heldModifiers.isEmpty {
+        if let inputState, !inputState.heldModifiers.isEmpty {
             for ch in text {
                 if let code = Keycodes.code(for: ch) { tap(code) }
             }
@@ -69,7 +84,7 @@ final class KeyInputUIView: UIView, UIKeyInput {
         client?.send("t \(text)")
     }
 
-    func deleteBackward() {
+    override func deleteBackward() {
         tap(51)
     }
 

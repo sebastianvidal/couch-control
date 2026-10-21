@@ -175,6 +175,7 @@ struct ContentView: View {
                     }
                     Toggle("Natural scrolling", isOn: $settings.naturalScroll)
                     Toggle("Tap, then touch-and-hold to drag", isOn: $settings.tapToDrag)
+                    Toggle("Three-finger swipes (Mission Control, Spaces)", isOn: $settings.threeFingerSwipes)
                 }
                 Section("Connection") {
                     ForEach(client.services) { service in

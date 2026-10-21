@@ -2,7 +2,8 @@ import SwiftUI
 import UIKit
 
 /// One finger moves, tap clicks, two-finger tap right-clicks, two fingers scroll,
-/// tap-then-touch-and-hold drags.
+/// tap-then-touch-and-hold drags, three-finger swipes are system gestures
+/// (Mission Control, App Exposé, Spaces on the Mac; Task View etc. on Windows).
 struct TrackpadView: UIViewRepresentable {
     let client: Client
     let settings: AppSettings
@@ -27,6 +28,8 @@ final class TrackpadUIView: UIView {
     private var travel: CGFloat = 0
     private var lastTapTime: TimeInterval = 0
     private var dragging = false
+    private var gestureStart = CGPoint.zero   // centroid when a third finger landed
+    private var gestureLast = CGPoint.zero
     private var moveRemainder = CGPoint.zero
     private var scrollRemainder = CGPoint.zero
     private let haptic = UIImpactFeedbackGenerator(style: .light)
@@ -53,6 +56,17 @@ final class TrackpadUIView: UIView {
         }
         for touch in touches { active[touch] = touch.location(in: self) }
         maxTouches = max(maxTouches, active.count)
+        if active.count == 3 {
+            gestureStart = centroid()
+            gestureLast = gestureStart
+        }
+    }
+
+    private func centroid() -> CGPoint {
+        let points = active.values
+        guard !points.isEmpty else { return .zero }
+        let sum = points.reduce(CGPoint.zero) { CGPoint(x: $0.x + $1.x, y: $0.y + $1.y) }
+        return CGPoint(x: sum.x / CGFloat(points.count), y: sum.y / CGFloat(points.count))
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -71,7 +85,10 @@ final class TrackpadUIView: UIView {
         delta.y /= CGFloat(moved)
         travel += hypot(delta.x, delta.y)
 
-        if active.count == 1 {
+        if maxTouches >= 3 {
+            // A three-finger gesture: nothing moves or scrolls until all fingers lift.
+            gestureLast = centroid()
+        } else if active.count == 1 {
             sendMove(delta)
         } else if active.count >= 2 {
             sendScroll(delta)
@@ -89,6 +106,8 @@ final class TrackpadUIView: UIView {
         if dragging {
             dragging = false
             client?.send("b l 0")
+        } else if maxTouches >= 3 {
+            finishSwipe()
         } else if duration < 0.25, travel < 12 {
             if maxTouches == 1 {
                 client?.send("c l")
@@ -99,6 +118,21 @@ final class TrackpadUIView: UIView {
                 haptic.impactOccurred()
             }
         }
+    }
+
+    private func finishSwipe() {
+        guard settings?.threeFingerSwipes != false else { return }
+        let dx = gestureLast.x - gestureStart.x
+        let dy = gestureLast.y - gestureStart.y
+        guard max(abs(dx), abs(dy)) > 50 else { return }
+        let direction: String
+        if abs(dy) >= abs(dx) {
+            direction = dy < 0 ? "up" : "down"
+        } else {
+            direction = dx < 0 ? "left" : "right"
+        }
+        client?.send("g \(direction)")
+        haptic.impactOccurred()
     }
 
     private func sendMove(_ delta: CGPoint) {

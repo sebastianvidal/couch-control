@@ -41,6 +41,7 @@ struct SetupView: View {
                     row("hand.tap", "Two-finger tap", "Right-click")
                     row("hand.draw", "Two fingers", "Scroll")
                     row("hand.point.up.left.and.text", "Tap, then touch and hold", "Drag")
+                    row("square.grid.3x3", "Three-finger swipe", "Up: Mission Control · Down: App Exposé · Left/right: switch Spaces")
                     row("keyboard", "Keyboard", "Types on the Mac. esc, tab, arrows and ⌘⌥⌃⇧ are in the strip above it")
                     row("gamecontroller", "Hold keys", "Expand the strip for WASD, space and F-keys that stay down while touched")
                 }

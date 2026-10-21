@@ -78,6 +78,7 @@ back to it when discovery finds nothing.
 | Two-finger tap             | Right click                              |
 | Two fingers                | Scroll                                   |
 | Tap, then touch and hold   | Drag (release to drop)                   |
+| Three-finger swipe         | Up: Mission Control · Down: App Exposé · Left/right: switch Spaces (Windows: Task View / desktop / virtual desktops) |
 | Left / Right buttons       | Hold the mouse button                    |
 | iOS keyboard               | Typing, backspace, return as real key presses |
 | esc, tab, arrows, F-keys, WASD strip | Key down while touched, up on release |
@@ -103,6 +104,7 @@ s dx dy      scroll in pixels
 b l|r 1|0    mouse button down / up
 c l|r        click
 k code 1|0   key down / up, macOS virtual keycode
+g up|down|left|right   three-finger swipe; the host maps it to its own shortcut
 t text       type text (each character is pressed as its key; shift added as needed)
 r            release everything
 ```

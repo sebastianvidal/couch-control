@@ -45,11 +45,34 @@ final class Injector {
             key(CGKeyCode(code), down: parts[2] == "1")
         case "t":
             type(String(line.dropFirst(2)))
+        case "g":
+            guard parts.count >= 2 else { return }
+            gesture(String(parts[1]))
         case "r":
             releaseAll()
         default:
             break
         }
+    }
+
+    /// Three-finger swipes from the phone, as the keyboard shortcuts for the same actions
+    /// (macOS has no public API for synthetic trackpad gestures):
+    /// up = Mission Control, down = App Exposé, left/right = previous/next Space.
+    private func gesture(_ direction: String) {
+        let arrow: CGKeyCode
+        switch direction {
+        case "up": arrow = 126
+        case "down": arrow = 125
+        case "left": arrow = 123
+        case "right": arrow = 124
+        default: return
+        }
+        let saved = modifiers
+        key(59, down: true)        // control
+        key(arrow, down: true)
+        key(arrow, down: false)
+        key(59, down: false)
+        modifiers = saved
     }
 
     // MARK: Mouse

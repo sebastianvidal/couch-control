@@ -49,11 +49,36 @@ static class Injector
                 case "t" when line.Length > 2:
                     Type(line[2..]);
                     break;
+                case "g" when p.Length >= 2:
+                    Gesture(p[1]);
+                    break;
                 case "r":
                     ReleaseAllLocked();
                     break;
             }
         }
+    }
+
+    /// <summary>
+    /// Three-finger swipes from the phone, as the shortcuts for the closest Windows actions:
+    /// up = Task View, down = show desktop, left/right = previous/next virtual desktop.
+    /// </summary>
+    static void Gesture(string direction)
+    {
+        const ushort LWIN = 0x5B, LCTRL = 0xA2, TAB = 0x09, D = 0x44, LEFT = 0x25, RIGHT = 0x27;
+        switch (direction)
+        {
+            case "up": Chord(LWIN, TAB); break;
+            case "down": Chord(LWIN, D); break;
+            case "left": Chord(LCTRL, LWIN, LEFT); break;
+            case "right": Chord(LCTRL, LWIN, RIGHT); break;
+        }
+    }
+
+    static void Chord(params ushort[] keys)
+    {
+        foreach (var k in keys) SendKey(k, true);
+        for (var i = keys.Length - 1; i >= 0; i--) SendKey(keys[i], false);
     }
 
     public static void ReleaseAll()
