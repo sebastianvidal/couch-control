@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using Microsoft.Win32;
 
-namespace CouchControl;
+namespace Couchpad;
 
 /// <summary>Tray-only app: starts the server and shows status, pairing code and settings.</summary>
 static class Program
@@ -70,7 +70,7 @@ static class Program
 
     static Icon LoadIcon()
     {
-        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("CouchControl.AppIcon.ico");
+        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Couchpad.AppIcon.ico");
         return stream != null ? new Icon(stream) : SystemIcons.Application;
     }
 

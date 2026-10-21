@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace CouchControl;
+namespace Couchpad;
 
 /// <summary>
 /// Turns protocol lines into SendInput calls. The phone speaks macOS virtual keycodes

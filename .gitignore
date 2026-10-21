@@ -7,8 +7,8 @@ DerivedData/
 
 # Per-developer
 iOS/Config/Local.xcconfig
-iOS/CouchControl.xcodeproj/xcuserdata/
-iOS/CouchControl.xcodeproj/project.xcworkspace/xcuserdata/
+iOS/Couchpad.xcodeproj/xcuserdata/
+iOS/Couchpad.xcodeproj/project.xcworkspace/xcuserdata/
 .DS_Store
 
 # Windows

@@ -7,7 +7,7 @@ import Network
 final class Server {
     private var listener: NWListener?
     private let port: UInt16
-    private let queue = DispatchQueue(label: "couchctl.server")
+    private let queue = DispatchQueue(label: "couchpad.server")
     private let onChange: () -> Void
     private var connections: [ObjectIdentifier: NWConnection] = [:]
     private var buffers: [ObjectIdentifier: Data] = [:]
@@ -28,7 +28,7 @@ final class Server {
             set(status: "Could not create listener")
             return
         }
-        listener.service = NWListener.Service(name: Host.current().localizedName ?? "Mac", type: "_couchctl._tcp")
+        listener.service = NWListener.Service(name: Host.current().localizedName ?? "Mac", type: "_couchpad._tcp")
         listener.stateUpdateHandler = { [weak self] state in
             guard let self else { return }
             switch state {

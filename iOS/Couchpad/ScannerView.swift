@@ -60,7 +60,7 @@ private struct Scanner: UIViewControllerRepresentable {
             for item in added {
                 guard case let .barcode(barcode) = item,
                       let text = barcode.payloadStringValue,
-                      let url = URL(string: text), url.scheme == "couchctl" else { continue }
+                      let url = URL(string: text), url.scheme == "couchpad" else { continue }
                 done = true
                 scanner.stopScanning()
                 onScan(url)

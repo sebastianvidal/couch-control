@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace CouchControl;
+namespace Couchpad;
 
 /// <summary>
 /// Phones must pair once with the 6-digit code shown in the tray menu. A successful pairing

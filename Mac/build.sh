@@ -6,7 +6,7 @@ swift build -c release 2>&1 | grep -v '^\[' || true
 APP="build/Couchpad.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
-cp .build/release/CouchControlMac "$APP/Contents/MacOS/Couchpad"
+cp .build/release/CouchpadMac "$APP/Contents/MacOS/Couchpad"
 cp Info.plist "$APP/Contents/Info.plist"
 mkdir -p "$APP/Contents/Resources"
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"

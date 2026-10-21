@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct CouchControlApp: App {
+struct CouchpadApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

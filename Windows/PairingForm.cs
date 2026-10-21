@@ -1,6 +1,6 @@
 using QRCoder;
 
-namespace CouchControl;
+namespace Couchpad;
 
 /// <summary>Small window with the pairing QR code and the digits under it.</summary>
 sealed class PairingForm : Form
@@ -38,7 +38,7 @@ sealed class PairingForm : Form
 
 static class PairingUrl
 {
-    /// <summary>couchctl://pair?name=&lt;host&gt;&amp;addr=&lt;ip&gt;&amp;port=48123&amp;code=&lt;6 digits&gt;</summary>
+    /// <summary>couchpad://pair?name=&lt;host&gt;&amp;addr=&lt;ip&gt;&amp;port=48123&amp;code=&lt;6 digits&gt;</summary>
     public static string Make(string name, string? address, int port, string code) =>
-        $"couchctl://pair?name={Uri.EscapeDataString(name)}&addr={Uri.EscapeDataString(address ?? "")}&port={port}&code={code}";
+        $"couchpad://pair?name={Uri.EscapeDataString(name)}&addr={Uri.EscapeDataString(address ?? "")}&port={port}&code={code}";
 }

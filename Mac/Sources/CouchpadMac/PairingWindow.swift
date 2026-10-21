@@ -2,11 +2,11 @@ import AppKit
 import CoreImage
 
 /// Pairing payload shared by every host: the phone scans it, or opens it as a URL.
-///   couchctl://pair?name=<host name>&addr=<ip>&port=48123&code=<6 digits>
+///   couchpad://pair?name=<host name>&addr=<ip>&port=48123&code=<6 digits>
 enum PairingURL {
     static func make(name: String, address: String?, port: UInt16, code: String) -> String {
         var components = URLComponents()
-        components.scheme = "couchctl"
+        components.scheme = "couchpad"
         components.host = "pair"
         components.queryItems = [
             URLQueryItem(name: "name", value: name),

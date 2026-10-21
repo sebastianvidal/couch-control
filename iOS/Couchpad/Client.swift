@@ -49,7 +49,7 @@ final class Client: ObservableObject {
     private var inBackground = false
     private var preferredName: String?
     private var manualHost: String?
-    private let queue = DispatchQueue(label: "couchctl.client")
+    private let queue = DispatchQueue(label: "couchpad.client")
     private let defaults = UserDefaults.standard
 
     private enum Credential { case token, code }
@@ -91,7 +91,7 @@ final class Client: ObservableObject {
 
     private func restartBrowser() {
         browser?.cancel()
-        let browser = NWBrowser(for: .bonjour(type: "_couchctl._tcp", domain: nil), using: .tcp)
+        let browser = NWBrowser(for: .bonjour(type: "_couchpad._tcp", domain: nil), using: .tcp)
         browser.browseResultsChangedHandler = { [weak self] results, _ in
             let list = results.compactMap { result -> Service? in
                 guard case let .service(name, _, _, _) = result.endpoint else { return nil }
@@ -213,11 +213,11 @@ final class Client: ObservableObject {
 
     // MARK: Pairing
 
-    /// Pairs from a scanned or opened `couchctl://pair?name=&addr=&port=&code=` URL.
+    /// Pairs from a scanned or opened `couchpad://pair?name=&addr=&port=&code=` URL.
     /// Connects straight to the address, so this works even where Bonjour is blocked.
     @discardableResult
     func pair(using url: URL) -> Bool {
-        guard url.scheme == "couchctl", url.host == "pair",
+        guard url.scheme == "couchpad", url.host == "pair",
               let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems else { return false }
         func value(_ key: String) -> String? { items.first { $0.name == key }?.value }
         guard let code = value("code"), !code.isEmpty else { return false }

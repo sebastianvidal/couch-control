@@ -7,27 +7,27 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		CC00000000000000000000E1 /* CouchControl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CouchControl.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC00000000000000000000E1 /* Couchpad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Couchpad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC00000000000000000000E2 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Local.xcconfig; path = Config/Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		CC00000000000000000000A2 /* Exceptions for "CouchControl" folder in "CouchControl" target */ = {
+		CC00000000000000000000A2 /* Exceptions for "Couchpad" folder in "Couchpad" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = CC00000000000000000000F1 /* CouchControl */;
+			target = CC00000000000000000000F1 /* Couchpad */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		CC00000000000000000000A1 /* CouchControl */ = {
+		CC00000000000000000000A1 /* Couchpad */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				CC00000000000000000000A2 /* Exceptions for "CouchControl" folder in "CouchControl" target */,
+				CC00000000000000000000A2 /* Exceptions for "Couchpad" folder in "Couchpad" target */,
 			);
-			path = CouchControl;
+			path = Couchpad;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -46,7 +46,7 @@
 		CC00000000000000000000C1 = {
 			isa = PBXGroup;
 			children = (
-				CC00000000000000000000A1 /* CouchControl */,
+				CC00000000000000000000A1 /* Couchpad */,
 				CC00000000000000000000E2 /* Local.xcconfig */,
 				CC00000000000000000000D1 /* Products */,
 			);
@@ -55,7 +55,7 @@
 		CC00000000000000000000D1 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				CC00000000000000000000E1 /* CouchControl.app */,
+				CC00000000000000000000E1 /* Couchpad.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -63,9 +63,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		CC00000000000000000000F1 /* CouchControl */ = {
+		CC00000000000000000000F1 /* Couchpad */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CC00000000000000000000G1 /* Build configuration list for PBXNativeTarget "CouchControl" */;
+			buildConfigurationList = CC00000000000000000000G1 /* Build configuration list for PBXNativeTarget "Couchpad" */;
 			buildPhases = (
 				CC00000000000000000000H1 /* Sources */,
 				CC00000000000000000000B1 /* Frameworks */,
@@ -76,13 +76,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				CC00000000000000000000A1 /* CouchControl */,
+				CC00000000000000000000A1 /* Couchpad */,
 			);
-			name = CouchControl;
+			name = Couchpad;
 			packageProductDependencies = (
 			);
-			productName = CouchControl;
-			productReference = CC00000000000000000000E1 /* CouchControl.app */;
+			productName = Couchpad;
+			productReference = CC00000000000000000000E1 /* Couchpad.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -100,7 +100,7 @@
 					};
 				};
 			};
-			buildConfigurationList = CC00000000000000000000K1 /* Build configuration list for PBXProject "CouchControl" */;
+			buildConfigurationList = CC00000000000000000000K1 /* Build configuration list for PBXProject "Couchpad" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -114,7 +114,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				CC00000000000000000000F1 /* CouchControl */,
+				CC00000000000000000000F1 /* Couchpad */,
 			);
 		};
 /* End PBXProject section */
@@ -195,7 +195,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = CouchControl/Info.plist;
+				INFOPLIST_FILE = Couchpad/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -206,7 +206,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.seb.CouchControl;
+				PRODUCT_BUNDLE_IDENTIFIER = com.seb.Couchpad;
 				PRODUCT_NAME = Couchpad;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -225,7 +225,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = CouchControl/Info.plist;
+				INFOPLIST_FILE = Couchpad/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -236,7 +236,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.seb.CouchControl;
+				PRODUCT_BUNDLE_IDENTIFIER = com.seb.Couchpad;
 				PRODUCT_NAME = Couchpad;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -248,7 +248,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		CC00000000000000000000G1 /* Build configuration list for PBXNativeTarget "CouchControl" */ = {
+		CC00000000000000000000G1 /* Build configuration list for PBXNativeTarget "Couchpad" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CC00000000000000000000M1 /* Debug */,
@@ -257,7 +257,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CC00000000000000000000K1 /* Build configuration list for PBXProject "CouchControl" */ = {
+		CC00000000000000000000K1 /* Build configuration list for PBXProject "Couchpad" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CC00000000000000000000L1 /* Debug */,

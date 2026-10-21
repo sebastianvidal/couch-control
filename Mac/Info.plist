@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>com.seb.CouchControl.mac</string>
+	<string>com.seb.Couchpad.mac</string>
 	<key>CFBundleName</key>
 	<string>Couchpad</string>
 	<key>CFBundleDisplayName</key>

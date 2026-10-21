@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "CouchControlMac",
+    name: "CouchpadMac",
     platforms: [.macOS(.v13)],
     targets: [
         .executableTarget(
-            name: "CouchControlMac",
-            path: "Sources/CouchControlMac"
+            name: "CouchpadMac",
+            path: "Sources/CouchpadMac"
         )
     ]
 )

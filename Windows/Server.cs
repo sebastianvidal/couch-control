@@ -3,7 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using Makaretu.Dns;
 
-namespace CouchControl;
+namespace Couchpad;
 
 /// <summary>
 /// TCP listener advertised over Bonjour (mDNS). The first line from a phone must be
@@ -45,7 +45,7 @@ sealed class Server
         try
         {
             discovery = new ServiceDiscovery();
-            discovery.Advertise(new ServiceProfile(Environment.MachineName, "_couchctl._tcp", (ushort)port));
+            discovery.Advertise(new ServiceProfile(Environment.MachineName, "_couchpad._tcp", (ushort)port));
         }
         catch (Exception e)
         {

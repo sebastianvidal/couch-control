@@ -7,7 +7,7 @@ No accounts, no cloud: the phone finds the computer with Bonjour, pairs once wit
 code, and talks to it over one TCP socket on your network.
 
 ```
-Mac/       SwiftPM menu-bar app. Advertises _couchctl._tcp on port 48123, injects CGEvents.
+Mac/       SwiftPM menu-bar app. Advertises _couchpad._tcp on port 48123, injects CGEvents.
 Windows/   .NET 8 tray app. Same protocol and port, injects via SendInput.
 iOS/       Xcode project. Trackpad on top, the iOS keyboard below, plus the keys it lacks.
 Tools/     make-icons.swift renders the app icons.
@@ -50,7 +50,7 @@ real Windows machine. If something misbehaves, open an issue.
 ## Build the iPhone app
 
 1. `cp iOS/Config/Local.xcconfig.example iOS/Config/Local.xcconfig` and put your Team ID in it.
-2. Open `iOS/CouchControl.xcodeproj`, pick your iPhone, Run.
+2. Open `iOS/Couchpad.xcodeproj`, pick your iPhone, Run.
 3. Allow **Local Network** when asked, otherwise the app can't find the Mac.
 
 Both devices need to be on the same Wi-Fi. If Bonjour is blocked on your network, type the
@@ -65,7 +65,7 @@ Control), or type the digits. The host then gives the phone a token it keeps, so
 never needed again for that phone. The code changes after every pairing. Only phones with a
 token can send input.
 
-The QR carries the host's address (`couchctl://pair?name=…&addr=…&port=…&code=…`), so a QR
+The QR carries the host's address (`couchpad://pair?name=…&addr=…&port=…&code=…`), so a QR
 pairing also works on networks that block Bonjour; the phone remembers the address and falls
 back to it when discovery finds nothing.
 
