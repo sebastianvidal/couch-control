@@ -2,8 +2,8 @@ import SwiftUI
 
 enum Links {
     
-    static let macDownload = URL(string: "https://github.com/sebastianvidal/couch-control/releases/latest")!
-    static let privacy = URL(string: "https://github.com/sebastianvidal/couch-control/blob/main/PRIVACY.md")!
+    static let macDownload = URL(string: "https://sebastianvidal.github.io/couch-control/")!
+    static let privacy = URL(string: "https://sebastianvidal.github.io/couch-control/privacy.html")!
 }
 
 /// First-run walkthrough. Also what App Review sees before a Mac is paired, so it has to

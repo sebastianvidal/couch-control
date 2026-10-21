@@ -115,8 +115,9 @@ The Mac releases every held key and button when a phone disconnects.
 
 - **iPhone → App Store.** Needs the Apple Developer Program. The project already carries the
   Local Network and Bonjour usage strings, `ITSAppUsesNonExemptEncryption = NO`, an icon and a
-  first-run setup screen. The in-app links point at this repository's latest release (Mac
-  download) and `PRIVACY.md`.
+  first-run setup screen. The in-app links point at the project site
+  (https://sebastianvidal.github.io/couch-control/, served from `docs/`) and its privacy
+  policy page, which is also the privacy policy URL for the App Store listing.
   In App Review notes, explain that the Mac app is a free direct download (the Mac App Store
   sandbox forbids input injection), link to it, and mention App Store Review Guideline 4.2.7
   and existing apps in this category (Remote Mouse, Mobile Mouse).
