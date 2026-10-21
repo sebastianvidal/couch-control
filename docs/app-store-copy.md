@@ -50,9 +50,9 @@ A Mac (macOS 13 or later) or a Windows 10/11 PC running the free Couchpad compan
 
 ## Keywords [100]
 
-remote,mouse,touchpad,wireless,mac,pc,windows,tv,couch,controller,cursor,wifi,gaming,steam,presentation
+remote,mouse,touchpad,wireless,mac,pc,windows,tv,couch,controller,cursor,wifi,gaming,steam
 
-(97 characters. Don't repeat the app name or words already in the subtitle; Apple indexes those separately.)
+(90 characters. Don't repeat the app name or words already in the subtitle; Apple indexes those separately.)
 
 ## What's New (1.0)
 
