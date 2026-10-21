@@ -6,6 +6,19 @@
 	<string>Couch Control</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Couch Control finds and controls your Mac over your local Wi-Fi.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Couch Control uses the camera only to scan the pairing QR code shown on your computer.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.seb.CouchControl.pair</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>couchctl</string>
+			</array>
+		</dict>
+	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSBonjourServices</key>

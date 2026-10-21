@@ -9,6 +9,7 @@ struct ContentView: View {
     @AppStorage("hasSeenSetup") private var hasSeenSetup = false
     @Environment(\.scenePhase) private var scenePhase
     @State private var showSetup = false
+    @State private var showScanner = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -33,6 +34,13 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showSettings) { settingsSheet }
         .sheet(isPresented: $showSetup) { SetupView() }
+        .sheet(isPresented: $showScanner) {
+            ScannerView { url in
+                showScanner = false
+                client.pair(using: url)
+            }
+        }
+        .onOpenURL { url in client.pair(using: url) }
         .onChange(of: scenePhase) { _, newPhase in
             switch newPhase {
             case .background: client.appDidEnterBackground()
@@ -88,9 +96,12 @@ struct ContentView: View {
                     Text("Open Couch Control on your Mac or PC\n(same Wi-Fi)")
                         .multilineTextAlignment(.center)
                         .font(.footnote)
-                    Button("How to set up") { showSetup = true }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
+                    HStack {
+                        Button("How to set up") { showSetup = true }
+                        Button("Scan QR code", systemImage: "qrcode.viewfinder") { showScanner = true }
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
                 }
                 .foregroundStyle(.secondary)
             }
@@ -122,6 +133,8 @@ struct ContentView: View {
             Button("Pair") { submitPairingCode() }
                 .buttonStyle(.borderedProminent)
                 .disabled(pairingCode.count < 6)
+            Button("Scan QR code instead", systemImage: "qrcode.viewfinder") { showScanner = true }
+                .font(.footnote)
             if client.phase == .wrongCode {
                 Text("That code didn't match. Codes change after each pairing.")
                     .font(.footnote)

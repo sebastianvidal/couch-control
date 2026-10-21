@@ -43,6 +43,7 @@ final class Client: ObservableObject {
     private var receiving = false
     private var receiveBuffer = Data()
     private var sentCredential: Credential?
+    private var pendingCode: String?
     private var retryTask: Task<Void, Never>?
     private var failures = 0
     private var inBackground = false
@@ -105,7 +106,14 @@ final class Client: ObservableObject {
     // MARK: Connecting
 
     private func autoConnect() {
-        guard connection == nil, !inBackground, manualHost == nil, !services.isEmpty else { return }
+        guard connection == nil, !inBackground, manualHost == nil else { return }
+        if services.isEmpty {
+            // Bonjour found nothing (yet, or blocked): fall back to the address a QR pairing gave us.
+            if let name = preferredName, let addr = defaults.string(forKey: addressKey(name)) {
+                connect(endpoint: .hostPort(host: NWEndpoint.Host(addr), port: NWEndpoint.Port(rawValue: servicePort)!), name: name)
+            }
+            return
+        }
         // The host we used last, then any host we have paired with, then whatever is there.
         let service = services.first { $0.name == preferredName }
             ?? services.first { token(for: $0.name) != nil }
@@ -148,7 +156,12 @@ final class Client: ObservableObject {
                     guard !self.receiving else { return } // the path recovered; the session is already set up
                     self.receiving = true
                     self.receive(on: connection)
-                    if let token = self.token(for: name) {
+                    if let code = self.pendingCode {
+                        self.pendingCode = nil
+                        self.sentCredential = .code
+                        self.status = "Pairing with \(name)…"
+                        self.sendRaw("hello \(code)")
+                    } else if let token = self.token(for: name) {
                         self.sentCredential = .token
                         self.sendRaw("hello \(token)")
                     } else {
@@ -196,6 +209,31 @@ final class Client: ObservableObject {
     }
 
     // MARK: Pairing
+
+    /// Pairs from a scanned or opened `couchctl://pair?name=&addr=&port=&code=` URL.
+    /// Connects straight to the address, so this works even where Bonjour is blocked.
+    @discardableResult
+    func pair(using url: URL) -> Bool {
+        guard url.scheme == "couchctl", url.host == "pair",
+              let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems else { return false }
+        func value(_ key: String) -> String? { items.first { $0.name == key }?.value }
+        guard let code = value("code"), !code.isEmpty else { return false }
+        let port = NWEndpoint.Port(rawValue: UInt16(value("port") ?? "") ?? servicePort)!
+        if let addr = value("addr"), !addr.isEmpty {
+            let name = value("name") ?? addr
+            defaults.set(addr, forKey: addressKey(name))
+            manualHost = nil
+            pendingCode = code
+            connect(endpoint: .hostPort(host: NWEndpoint.Host(addr), port: port), name: name)
+            return true
+        }
+        if let name = value("name"), let service = services.first(where: { $0.name == name }) {
+            pendingCode = code
+            connect(to: service)
+            return true
+        }
+        return false
+    }
 
     func submitCode(_ code: String) {
         let trimmed = code.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -276,5 +314,6 @@ final class Client: ObservableObject {
     }
 
     private func tokenKey(_ name: String) -> String { "token.\(name)" }
+    private func addressKey(_ name: String) -> String { "addr.\(name)" }
     private func token(for name: String) -> String? { defaults.string(forKey: tokenKey(name)) }
 }

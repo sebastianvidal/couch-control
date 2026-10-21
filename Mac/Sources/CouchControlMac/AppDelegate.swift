@@ -14,6 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let loginLine = NSMenuItem(title: "Launch at Login", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
     private let forgetLine = NSMenuItem(title: "Forget Paired iPhones…", action: #selector(forgetPhones), keyEquivalent: "")
     private var server: Server?
+    private let pairingWindow = PairingWindow()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -53,7 +54,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func refresh() {
         statusLine.title = server?.status ?? statusLine.title
-        codeLine.title = "Pairing code: \(Pairing.shared.code)"
+        codeLine.title = "Pairing code: \(Pairing.shared.code) — show QR…"
+        if pairingWindow.isVisible {
+            pairingWindow.update(payload: pairingPayload(), code: Pairing.shared.code)
+        }
         addressLine.title = "Address: \(localIPv4() ?? "?"):\(servicePort)"
         loginLine.state = SMAppService.mainApp.status == .enabled ? .on : .off
         forgetLine.isEnabled = Pairing.shared.pairedCount > 0
@@ -72,12 +76,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func showPairingCode() {
-        NSApp.activate(ignoringOtherApps: true)
-        let alert = NSAlert()
-        alert.messageText = Pairing.shared.code
-        alert.informativeText = "Enter this code in Couch Control on your iPhone. It changes after each pairing."
-        alert.addButton(withTitle: "Done")
-        alert.runModal()
+        pairingWindow.show(payload: pairingPayload(), code: Pairing.shared.code)
+    }
+
+    private func pairingPayload() -> String {
+        PairingURL.make(name: Host.current().localizedName ?? "Mac", address: localIPv4(),
+                        port: servicePort, code: Pairing.shared.code)
     }
 
     @objc private func requestAccessibility() {

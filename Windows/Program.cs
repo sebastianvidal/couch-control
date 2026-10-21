@@ -20,6 +20,7 @@ static class Program
     static ToolStripMenuItem startupItem = null!;
     static ToolStripMenuItem forgetItem = null!;
     static Server server = null!;
+    static PairingForm? pairingForm;
 
     [STAThread]
     static void Main()
@@ -82,7 +83,8 @@ static class Program
     static void Refresh()
     {
         statusItem.Text = server.Status;
-        codeItem.Text = $"Pairing code: {Pairing.Code}";
+        codeItem.Text = $"Pairing code: {Pairing.Code} — show QR…";
+        if (pairingForm is { Visible: true }) pairingForm.Update(PairingPayload(), Pairing.Code);
         addressItem.Text = $"Address: {LocalIPv4() ?? "?"}:{Port}";
         startupItem.Checked = IsStartupEnabled();
         forgetItem.Enabled = Pairing.PairedCount > 0;
@@ -91,10 +93,13 @@ static class Program
 
     static void ShowCode()
     {
-        MessageBox.Show(
-            $"{Pairing.Code}\n\nEnter this code in Couch Control on your iPhone. It changes after each pairing.",
-            "Couch Control pairing code", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        pairingForm ??= new PairingForm();
+        pairingForm.Update(PairingPayload(), Pairing.Code);
+        pairingForm.Show();
+        pairingForm.Activate();
     }
+
+    static string PairingPayload() => PairingUrl.Make(Environment.MachineName, LocalIPv4(), Port, Pairing.Code);
 
     static void ForgetPhones()
     {
