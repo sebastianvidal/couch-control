@@ -2,7 +2,7 @@
 # Builds the Mac menu-bar app into Mac/build/Couchpad.app
 set -e -o pipefail
 cd "$(dirname "$0")"
-swift build -c release 2>&1 | grep -v '^\[' || true
+swift build -c release 2>&1 | grep -v '^\[' || { echo 'swift build failed' >&2; exit 1; }
 APP="build/Couchpad.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
