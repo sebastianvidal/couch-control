@@ -5,7 +5,8 @@ import Network
 /// `hello <code-or-token>`; the Mac answers `ok <token> mac` or `nope`. After that each line
 /// is one input command (see Injector.handle).
 final class Server {
-    private let listener: NWListener
+    private var listener: NWListener?
+    private let port: UInt16
     private let queue = DispatchQueue(label: "couchctl.server")
     private let onChange: () -> Void
     private var connections: [ObjectIdentifier: NWConnection] = [:]
@@ -15,24 +16,36 @@ final class Server {
     private(set) var status = "Starting…"
 
     init(port: UInt16, onChange: @escaping () -> Void) throws {
+        self.port = port
         self.onChange = onChange
-        let params = NWParameters.tcp
-        (params.defaultProtocolStack.transportProtocol as? NWProtocolTCP.Options)?.noDelay = true
-        listener = try NWListener(using: params, on: NWEndpoint.Port(rawValue: port)!)
-        listener.service = NWListener.Service(name: Host.current().localizedName ?? "Mac", type: "_couchctl._tcp")
     }
 
+    /// Starts listening; if the port is busy or the network isn't up yet, keeps retrying.
     func start() {
+        let params = NWParameters.tcp
+        (params.defaultProtocolStack.transportProtocol as? NWProtocolTCP.Options)?.noDelay = true
+        guard let listener = try? NWListener(using: params, on: NWEndpoint.Port(rawValue: port)!) else {
+            set(status: "Could not create listener")
+            return
+        }
+        listener.service = NWListener.Service(name: Host.current().localizedName ?? "Mac", type: "_couchctl._tcp")
         listener.stateUpdateHandler = { [weak self] state in
+            guard let self else { return }
             switch state {
-            case .ready: self?.report()
-            case .failed(let error): self?.set(status: "Server failed: \(error.localizedDescription)")
-            default: break
+            case .ready:
+                self.report()
+            case .failed(let error):
+                self.set(status: "Server failed: \(error.localizedDescription) — retrying…")
+                listener.cancel()
+                self.queue.asyncAfter(deadline: .now() + 3) { [weak self] in self?.start() }
+            default:
+                break
             }
         }
         listener.newConnectionHandler = { [weak self] connection in
             self?.accept(connection)
         }
+        self.listener = listener
         listener.start(queue: queue)
     }
 
