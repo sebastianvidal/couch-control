@@ -87,3 +87,22 @@ Without a companion, the app still launches and offers the setup guide and gestu
 No account, no login, no data collection. The Local Network permission is used only for Bonjour discovery and the direct connection; the camera only for the pairing QR.
 
 A demo video: <add link>
+
+## TestFlight — Beta App Description
+
+Couchpad turns your iPhone into a trackpad and keyboard for your Mac or Windows PC over Wi‑Fi — made for a computer plugged into the TV and you on the couch.
+
+You'll need the free companion app on the computer, from https://sebastianvidal.github.io/couchpad/. Open it, grant Accessibility on the Mac (or allow it through the firewall on Windows), then open Couchpad on your phone: it finds the computer by itself. Pair once by scanning the QR code from the computer's menu-bar or tray icon.
+
+Everything stays on your local network. No account, no data collected.
+
+## TestFlight — What to Test (build 1)
+
+• Pairing: does the phone find your computer without typing anything? Does the QR scan work first try?
+• Trackpad feel: pointer speed, tap-to-click, two-finger scroll, tap-then-hold drag. Adjust in Settings (gear) if it's off and tell me what you changed.
+• Keyboard: type a sentence into any app. Try ⌘ + letter shortcuts using the strip above the keyboard.
+• Three-finger swipe up for Mission Control.
+• Leave the app, come back: it should reconnect within a couple of seconds without asking for the code again.
+• Games: use the "F-keys & hold keys" strip for WASD; tell me which games worked and which didn't.
+
+Report problems at https://github.com/sebastianvidal/couchpad/issues or via the TestFlight feedback button.
