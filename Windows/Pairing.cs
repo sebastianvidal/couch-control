@@ -10,7 +10,7 @@ static class Pairing
 {
     static readonly object Gate = new();
     static readonly string TokensPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CouchControl", "tokens.json");
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Couchpad", "tokens.json");
     static HashSet<string> tokens = Load();
 
     public static string Code { get; private set; } = MakeCode();

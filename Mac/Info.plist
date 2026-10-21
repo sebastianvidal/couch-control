@@ -5,11 +5,11 @@
 	<key>CFBundleIdentifier</key>
 	<string>com.seb.CouchControl.mac</string>
 	<key>CFBundleName</key>
-	<string>Couch Control</string>
+	<string>Couchpad</string>
 	<key>CFBundleDisplayName</key>
-	<string>Couch Control</string>
+	<string>Couchpad</string>
 	<key>CFBundleExecutable</key>
-	<string>CouchControl</string>
+	<string>Couchpad</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

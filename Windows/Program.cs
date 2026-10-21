@@ -25,7 +25,7 @@ static class Program
     [STAThread]
     static void Main()
     {
-        using var single = new Mutex(true, "CouchControl.SingleInstance", out var first);
+        using var single = new Mutex(true, "Couchpad.SingleInstance", out var first);
         if (!first) return;
 
         ApplicationConfiguration.Initialize();
@@ -43,13 +43,13 @@ static class Program
         menu.Items.Add(startupItem);
         menu.Items.Add(forgetItem);
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add(new ToolStripMenuItem("Quit Couch Control", null, (_, _) => Application.Exit()));
+        menu.Items.Add(new ToolStripMenuItem("Quit Couchpad", null, (_, _) => Application.Exit()));
         menu.Opening += (_, _) => Refresh();
 
         tray = new NotifyIcon
         {
             Icon = LoadIcon(),
-            Text = "Couch Control",
+            Text = "Couchpad",
             ContextMenuStrip = menu,
             Visible = true,
         };
@@ -88,7 +88,7 @@ static class Program
         addressItem.Text = $"Address: {LocalIPv4() ?? "?"}:{Port}";
         startupItem.Checked = IsStartupEnabled();
         forgetItem.Enabled = Pairing.PairedCount > 0;
-        tray.Text = $"Couch Control — {server.Status}";
+        tray.Text = $"Couchpad — {server.Status}";
     }
 
     static void ShowCode()
@@ -104,7 +104,7 @@ static class Program
     static void ForgetPhones()
     {
         var answer = MessageBox.Show("Forget all paired iPhones?\n\nEvery phone will need the pairing code again.",
-            "Couch Control", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+            "Couchpad", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
         if (answer != DialogResult.OK) return;
         Pairing.ForgetAll();
         server.DisconnectAll();
@@ -114,14 +114,14 @@ static class Program
     static bool IsStartupEnabled()
     {
         using var key = Registry.CurrentUser.OpenSubKey(RunKey);
-        return key?.GetValue("CouchControl") is string;
+        return key?.GetValue("Couchpad") is string;
     }
 
     static void ToggleStartup()
     {
         using var key = Registry.CurrentUser.CreateSubKey(RunKey);
-        if (IsStartupEnabled()) key.DeleteValue("CouchControl", false);
-        else key.SetValue("CouchControl", $"\"{Environment.ProcessPath}\"");
+        if (IsStartupEnabled()) key.DeleteValue("Couchpad", false);
+        else key.SetValue("Couchpad", $"\"{Environment.ProcessPath}\"");
         Refresh();
     }
 

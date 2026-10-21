@@ -93,7 +93,7 @@ struct ContentView: View {
             default:
                 VStack(spacing: 10) {
                     Image(systemName: "wifi.exclamationmark").font(.title2)
-                    Text("Open Couch Control on your Mac or PC\n(same Wi-Fi)")
+                    Text("Open Couchpad on your Mac or PC\n(same Wi-Fi)")
                         .multilineTextAlignment(.center)
                         .font(.footnote)
                     HStack {
@@ -115,7 +115,7 @@ struct ContentView: View {
             Text("Pair with \(client.macName)")
                 .font(.headline)
             Text(client.hostPlatform == .windows
-                 ? "Click the Couch Control icon in the Windows system tray and enter the 6-digit pairing code."
+                 ? "Click the Couchpad icon in the Windows system tray and enter the 6-digit pairing code."
                  : "Click the cursor icon in the Mac's menu bar and enter the 6-digit pairing code.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -205,7 +205,7 @@ struct ContentView: View {
             .navigationTitle("Settings")
             .toolbar { Button("Done") { showSettings = false } }
             .safeAreaInset(edge: .bottom) {
-                Text("Couch Control \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
+                Text("Couchpad \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
                     .padding(8)

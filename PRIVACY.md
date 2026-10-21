@@ -1,11 +1,11 @@
-# Couch Control Privacy Policy
+# Couchpad Privacy Policy
 
-Couch Control turns your iPhone into a trackpad and keyboard for your own Mac.
+Couchpad turns your iPhone into a trackpad and keyboard for your own Mac.
 
 **What it collects: nothing.** The app has no accounts, no analytics, no advertising and no
 servers. It does not collect, store or transmit personal data.
 
-**How it uses your network.** The iPhone app looks for the Couch Control Mac app on your local
+**How it uses your network.** The iPhone app looks for the Couchpad Mac app on your local
 Wi-Fi using Bonjour, and sends your touches and keystrokes directly to that Mac. This traffic
 never leaves your local network. The iPhone app asks for Local Network permission for this
 reason and works for nothing else.

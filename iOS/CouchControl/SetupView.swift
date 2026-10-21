@@ -2,8 +2,8 @@ import SwiftUI
 
 enum Links {
     
-    static let macDownload = URL(string: "https://sebastianvidal.github.io/couch-control/")!
-    static let privacy = URL(string: "https://sebastianvidal.github.io/couch-control/privacy.html")!
+    static let macDownload = URL(string: "https://sebastianvidal.github.io/couchpad/")!
+    static let privacy = URL(string: "https://sebastianvidal.github.io/couchpad/privacy.html")!
 }
 
 /// First-run walkthrough. Also what App Review sees before a Mac is paired, so it has to
@@ -27,7 +27,7 @@ struct SetupView: View {
 
                 Section("Set up in three steps") {
                     step(1, "Install the free desktop app",
-                         "Download Couch Control for Mac or Windows and open it. On a Mac it lives in the menu bar as a cursor icon; on Windows, in the system tray.",
+                         "Download Couchpad for Mac or Windows and open it. On a Mac it lives in the menu bar as a cursor icon; on Windows, in the system tray.",
                          link: Links.macDownload, linkTitle: "Download for Mac or Windows")
                     step(2, "Allow it once",
                          "macOS asks for Accessibility access, which is what lets it move the pointer and type. Windows asks to allow it through the firewall on private networks.")
@@ -52,7 +52,7 @@ struct SetupView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .navigationTitle("Couch Control")
+            .navigationTitle("Couchpad")
             .toolbar { Button("Done") { dismiss() } }
         }
     }

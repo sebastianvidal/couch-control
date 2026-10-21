@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>Couch Control</string>
+	<string>Couchpad</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Couch Control finds and controls your Mac over your local Wi-Fi.</string>
+	<string>Couchpad finds and controls your Mac over your local Wi-Fi.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Couch Control uses the camera only to scan the pairing QR code shown on your computer.</string>
+	<string>Couchpad uses the camera only to scan the pairing QR code shown on your computer.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

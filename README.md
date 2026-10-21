@@ -1,4 +1,4 @@
-# Couch Control
+# Couchpad
 
 Your iPhone as a trackpad and keyboard for your Mac or Windows PC, over local Wi-Fi. Made
 for gaming on a computer plugged into the TV without a mouse and keyboard on the couch.
@@ -17,7 +17,7 @@ Tools/     make-icons.swift renders the app icons.
 
 ```bash
 Mac/build.sh
-open "Mac/build/Couch Control.app"
+open "Mac/build/Couchpad.app"
 ```
 
 A cursor icon appears in the menu bar. The first launch asks for **Accessibility** access
@@ -35,7 +35,7 @@ Needs the [.NET 8 SDK](https://dotnet.microsoft.com/download). On Windows:
 dotnet publish Windows -c Release -r win-x64 --self-contained -p:PublishSingleFile=true
 ```
 
-Run `Windows/bin/Release/net8.0-windows/win-x64/publish/CouchControl.exe`. It lives in the
+Run `Windows/bin/Release/net8.0-windows/win-x64/publish/Couchpad.exe`. It lives in the
 system tray; right-click for the pairing code, address and "Start with Windows". The first
 run asks to allow it through Windows Firewall — allow it on **private** networks, or the phone
 can't reach it. No other permission is needed: `SendInput` works for any app, including games
@@ -116,7 +116,7 @@ The Mac releases every held key and button when a phone disconnects.
 - **iPhone → App Store.** Needs the Apple Developer Program. The project already carries the
   Local Network and Bonjour usage strings, `ITSAppUsesNonExemptEncryption = NO`, an icon and a
   first-run setup screen. The in-app links point at the project site
-  (https://sebastianvidal.github.io/couch-control/, served from `docs/`) and its privacy
+  (https://sebastianvidal.github.io/couchpad/, served from `docs/`) and its privacy
   policy page, which is also the privacy policy URL for the App Store listing.
   In App Review notes, explain that the Mac app is a free direct download (the Mac App Store
   sandbox forbids input injection), link to it, and mention App Store Review Guideline 4.2.7
@@ -124,7 +124,7 @@ The Mac releases every held key and button when a phone disconnects.
 - **Mac → direct download.** The Mac App Store sandbox blocks the event injection this app
   needs, so it ships as a notarized zip attached to a GitHub Release:
   `SIGN_IDENTITY="Developer ID Application: …" Mac/release.sh` (see the script for the
-  one-time `notarytool` credential setup), then `gh release create v1.0 Mac/build/CouchControl-mac.zip`.
+  one-time `notarytool` credential setup), then `gh release create v1.0 Mac/build/Couchpad-mac.zip`.
 - **Windows → direct download.** Zip the `publish` folder from the command above and attach
   it to the same release. Unsigned builds trigger SmartScreen's "unknown publisher" warning;
   an Authenticode certificate removes it but isn't required.

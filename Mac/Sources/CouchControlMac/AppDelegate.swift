@@ -18,7 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "cursorarrow.rays", accessibilityDescription: "Couch Control")
+        statusItem.button?.image = NSImage(systemSymbolName: "cursorarrow.rays", accessibilityDescription: "Couchpad")
 
         menu.delegate = self
         menu.addItem(statusLine)
@@ -29,7 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(loginLine)
         menu.addItem(forgetLine)
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Quit Couch Control", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: "Quit Couchpad", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         for item in [codeLine, axLine, loginLine, forgetLine] { item.target = self }
         statusItem.menu = menu
 

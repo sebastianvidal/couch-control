@@ -28,7 +28,7 @@ final class PairingWindow {
     init() {
         window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 300, height: 400),
                           styleMask: [.titled, .closable], backing: .buffered, defer: false)
-        window.title = "Pair with Couch Control"
+        window.title = "Pair with Couchpad"
         window.isReleasedWhenClosed = false
         window.level = .floating
         window.center()
@@ -43,7 +43,7 @@ final class PairingWindow {
         hintLabel.font = .systemFont(ofSize: 12)
         hintLabel.textColor = .secondaryLabelColor
         hintLabel.alignment = .center
-        hintLabel.stringValue = "Scan with Couch Control on your iPhone (or with the Camera app), or type the code. It changes after each pairing."
+        hintLabel.stringValue = "Scan with Couchpad on your iPhone (or with the Camera app), or type the code. It changes after each pairing."
         hintLabel.frame = NSRect(x: 24, y: 20, width: 252, height: 60)
 
         let content = NSView(frame: window.contentRect(forFrameRect: window.frame))

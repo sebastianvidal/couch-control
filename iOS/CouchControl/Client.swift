@@ -4,7 +4,7 @@ import Combine
 
 let servicePort: UInt16 = 48123
 
-/// Finds computers running Couch Control over Bonjour, keeps one TCP connection open, and
+/// Finds computers running Couchpad over Bonjour, keeps one TCP connection open, and
 /// handles pairing: the host wants `hello <code-or-token>` first and answers
 /// `ok <token> <platform>` or `nope`. Tokens are kept per host so the code is only needed once.
 ///

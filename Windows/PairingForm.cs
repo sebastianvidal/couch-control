@@ -11,14 +11,14 @@ sealed class PairingForm : Form
 
     public PairingForm()
     {
-        Text = "Pair with Couch Control";
+        Text = "Pair with Couchpad";
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
         MinimizeBox = false;
         StartPosition = FormStartPosition.CenterScreen;
         TopMost = true;
         ClientSize = new Size(300, 400);
-        hint.Text = "Scan with Couch Control on your iPhone (or with the Camera app), or type the code. It changes after each pairing.";
+        hint.Text = "Scan with Couchpad on your iPhone (or with the Camera app), or type the code. It changes after each pairing.";
         Controls.Add(hint);
         Controls.Add(codeLabel);
         Controls.Add(picture);
