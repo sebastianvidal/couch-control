@@ -60,6 +60,9 @@ final class Client: ObservableObject {
         guard browser == nil else { return }
         preferredName = defaults.string(forKey: "preferredHost")
         restartBrowser()
+        // Bonjour only calls back when it finds something, so give it a moment and then try
+        // the stored address if there is still nothing.
+        scheduleRetry(after: 2)
     }
 
     func appDidEnterBackground() {

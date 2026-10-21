@@ -32,14 +32,18 @@ struct KeyInputView: UIViewRepresentable {
     }
 }
 
-/// A real text field (so iOS reliably honors "no autocorrect, no predictions") that never
-/// keeps any text: each keystroke is forwarded and discarded.
-final class KeyInputUIView: UITextField {
+/// A real text field (so iOS reliably honors "no autocorrect, no predictions"). Keystrokes
+/// arrive through the delegate, are forwarded, and are never stored: the field only ever
+/// holds one zero-width sentinel so that backspace is still reported.
+final class KeyInputUIView: UITextField, UITextFieldDelegate {
     weak var client: Client?
     weak var inputState: InputState?
 
+    private static let sentinel = "\u{200B}"
+
     override init(frame: CGRect) {
         super.init(frame: frame)
+        delegate = self
         autocorrectionType = .no
         autocapitalizationType = .none
         spellCheckingType = .no
@@ -54,6 +58,7 @@ final class KeyInputUIView: UITextField {
         tintColor = .clear
         textColor = .clear
         backgroundColor = .clear
+        text = KeyInputUIView.sentinel
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -69,23 +74,33 @@ final class KeyInputUIView: UITextField {
     override func selectionRects(for range: UITextRange) -> [UITextSelectionRect] { [] }
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool { false }
 
-    override func insertText(_ text: String) {
-        // Deliberately not calling super: the field stays empty.
-        if text == "\n" {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if string.isEmpty {
+            tap(51) // backspace
+        } else {
+            forward(string)
+        }
+        if text != KeyInputUIView.sentinel { text = KeyInputUIView.sentinel }
+        return false
+    }
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        tap(36)
+        return false
+    }
+
+    private func forward(_ string: String) {
+        if string == "\n" {
             tap(36)
             return
         }
         if let inputState, !inputState.heldModifiers.isEmpty {
-            for ch in text {
+            for ch in string {
                 if let code = Keycodes.code(for: ch) { tap(code) }
             }
             return
         }
-        client?.send("t \(text)")
-    }
-
-    override func deleteBackward() {
-        tap(51)
+        client?.send("t \(string)")
     }
 
     private func tap(_ code: Int) {
