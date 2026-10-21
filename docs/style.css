@@ -27,6 +27,7 @@ header p { margin: 6px 0 0; color: var(--muted); }
   display: inline-block; padding: 12px 20px; border-radius: 12px; text-decoration: none;
   font-weight: 600; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-2));
 }
+.btn.small { padding: 7px 14px; font-size: 14px; }
 .btn.secondary { background: var(--panel); border: 1px solid var(--border); color: var(--text); }
 h2 { font-size: 20px; margin: 40px 0 12px; }
 p, li { color: var(--text); }

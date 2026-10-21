@@ -7,7 +7,8 @@ No accounts, no cloud: the phone finds the computer with Bonjour, pairs once wit
 code, and talks to it over one TCP socket on your network.
 
 **Status (October 2026):** the iPhone app is in **TestFlight beta** ahead of a free App Store
-release; the Mac companion is in daily use from local builds; the Windows companion compiles
+release; the Mac companion **1.0 is released** (signed and notarized, under
+[Releases](https://github.com/sebastianvidal/couchpad/releases/latest)); the Windows companion compiles
 but has not yet been run on a real Windows machine. Site: https://sebastianvidal.github.io/couchpad/
 
 ```
@@ -17,7 +18,10 @@ iOS/       Xcode project. Trackpad on top, the iOS keyboard below, plus the keys
 Tools/     make-icons.swift renders the app icons.
 ```
 
-## Build the Mac app
+## Mac app
+
+Download the notarized build from [Releases](https://github.com/sebastianvidal/couchpad/releases/latest),
+or build it yourself:
 
 ```bash
 Mac/build.sh
