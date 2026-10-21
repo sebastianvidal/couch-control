@@ -6,6 +6,10 @@ for gaming on a computer plugged into the TV without a mouse and keyboard on the
 No accounts, no cloud: the phone finds the computer with Bonjour, pairs once with a 6-digit
 code, and talks to it over one TCP socket on your network.
 
+**Status (October 2026):** the iPhone app is in **TestFlight beta** ahead of a free App Store
+release; the Mac companion is in daily use from local builds; the Windows companion compiles
+but has not yet been run on a real Windows machine. Site: https://sebastianvidal.github.io/couchpad/
+
 ```
 Mac/       SwiftPM menu-bar app. Advertises _couchpad._tcp on port 48123, injects CGEvents.
 Windows/   .NET 8 tray app. Same protocol and port, injects via SendInput.
