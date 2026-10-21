@@ -7,6 +7,7 @@ struct ContentView: View {
     @State private var showSettings = false
     @State private var pairingCode = ""
     @AppStorage("hasSeenSetup") private var hasSeenSetup = false
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showSetup = false
 
     var body: some View {
@@ -32,6 +33,13 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showSettings) { settingsSheet }
         .sheet(isPresented: $showSetup) { SetupView() }
+        .onChange(of: scenePhase) { _, newPhase in
+            switch newPhase {
+            case .background: client.appDidEnterBackground()
+            case .active: client.appDidBecomeActive()
+            default: break
+            }
+        }
     }
 
     private var topBar: some View {
@@ -69,6 +77,11 @@ struct ContentView: View {
                 EmptyView()
             case .needsCode, .wrongCode:
                 pairingPrompt
+            case .connecting where !client.macName.isEmpty:
+                ProgressView(client.status)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .allowsHitTesting(false)
             default:
                 VStack(spacing: 10) {
                     Image(systemName: "wifi.exclamationmark").font(.title2)

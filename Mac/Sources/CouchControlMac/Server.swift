@@ -85,10 +85,10 @@ final class Server {
             Injector.shared.handle(line)
             return
         }
-        guard line.hasPrefix("hello ") else {
-            send("nope", to: connection)
-            return
-        }
+        // Input that arrives before the handshake (queued on the phone while its socket was
+        // reconnecting) is dropped, not refused: "nope" is only for a bad hello, because the
+        // phone treats it as "this host forgot me" and throws its token away.
+        guard line.hasPrefix("hello ") else { return }
         let credential = String(line.dropFirst(6)).trimmingCharacters(in: .whitespaces)
         if let token = Pairing.shared.authenticate(credential) {
             authenticated.insert(id)

@@ -107,11 +107,10 @@ sealed class Server
                     continue;
                 }
 
-                if (!line.StartsWith("hello ", StringComparison.Ordinal))
-                {
-                    await Send(stream, "nope");
-                    continue;
-                }
+                // Input that arrives before the handshake (queued on the phone while its socket
+                // was reconnecting) is dropped, not refused: "nope" is only for a bad hello,
+                // because the phone treats it as "this host forgot me" and discards its token.
+                if (!line.StartsWith("hello ", StringComparison.Ordinal)) continue;
                 var issued = Pairing.Authenticate(line[6..].Trim());
                 if (issued != null)
                 {
