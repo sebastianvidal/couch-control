@@ -1,0 +1,12 @@
+# Build output
+Mac/.build/
+Mac/build/
+iOS/build/
+DerivedData/
+*.xcresult
+
+# Per-developer
+iOS/Config/Local.xcconfig
+iOS/CouchControl.xcodeproj/xcuserdata/
+iOS/CouchControl.xcodeproj/project.xcworkspace/xcuserdata/
+.DS_Store

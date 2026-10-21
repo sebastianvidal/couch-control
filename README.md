@@ -1,0 +1,100 @@
+# Couch Control
+
+Your iPhone as a trackpad and keyboard for your Mac, over local Wi-Fi. Made for gaming on a
+Mac plugged into the TV without a mouse and keyboard on the couch.
+
+Swift on both sides, no accounts, no cloud: the phone finds the Mac with Bonjour, pairs once
+with a 6-digit code, and talks to it over one TCP socket on your network.
+
+```
+Mac/     SwiftPM menu-bar app. Advertises _couchctl._tcp on port 48123, injects CGEvents.
+iOS/     Xcode project. Trackpad on top, the iOS keyboard below, plus the keys it lacks.
+Tools/   make-icons.swift renders both app icons.
+```
+
+## Build the Mac app
+
+```bash
+Mac/build.sh
+open "Mac/build/Couch Control.app"
+```
+
+A cursor icon appears in the menu bar. The first launch asks for **Accessibility** access
+(System Settings → Privacy & Security → Accessibility); that permission is what lets it move
+the pointer and type. Local builds are ad-hoc signed, so macOS may ask again after a rebuild.
+
+Menu: connection status · pairing code · address · Accessibility state · Launch at Login ·
+Forget Paired iPhones.
+
+## Build the iPhone app
+
+1. `cp iOS/Config/Local.xcconfig.example iOS/Config/Local.xcconfig` and put your Team ID in it.
+2. Open `iOS/CouchControl.xcodeproj`, pick your iPhone, Run.
+3. Allow **Local Network** when asked, otherwise the app can't find the Mac.
+
+Both devices need to be on the same Wi-Fi. If Bonjour is blocked on your network, type the
+Mac's IP (shown in the menu-bar menu) into Settings → Connection on the phone.
+
+## Pairing
+
+The first time a phone connects, it asks for the 6-digit code shown in the Mac's menu bar
+(click "Pairing code" to see it large). The Mac then gives the phone a token it keeps, so the
+code is never needed again for that phone. The code changes after every pairing. Only phones
+with a token can send input.
+
+## Gestures
+
+| Phone                      | Mac                                      |
+| -------------------------- | ---------------------------------------- |
+| One finger                 | Move pointer                             |
+| Tap                        | Left click                               |
+| Two-finger tap             | Right click                              |
+| Two fingers                | Scroll                                   |
+| Tap, then touch and hold   | Drag (release to drop)                   |
+| Left / Right buttons       | Hold the mouse button                    |
+| iOS keyboard               | Typing, backspace, return as real key presses |
+| esc, tab, arrows, F-keys, WASD strip | Key down while touched, up on release |
+| ⇧ ⌃ ⌥ ⌘ fn                 | Toggle: held until tapped again; typed letters become shortcuts (⌘C etc.) |
+| Keyboard button            | Hide / show the iOS keyboard to enlarge the trackpad |
+
+Pointer speed, scroll speed, natural scrolling and tap-to-drag are in the gear menu.
+
+## Protocol
+
+Newline-terminated text lines over TCP. The phone must authenticate first:
+
+```
+hello <code-or-token>   → Mac answers  ok <token>  or  nope
+```
+
+Then, one command per line:
+
+```
+m dx dy      move (dx/dy also sent as raw mouse deltas, which is what games read)
+s dx dy      scroll in pixels
+b l|r 1|0    mouse button down / up
+c l|r        click
+k code 1|0   key down / up, macOS virtual keycode
+t text       type text (each character is pressed as its key; shift added as needed)
+r            release everything
+```
+
+The Mac releases every held key and button when a phone disconnects.
+
+## Releasing
+
+- **iPhone → App Store.** Needs the Apple Developer Program. The project already carries the
+  Local Network and Bonjour usage strings, `ITSAppUsesNonExemptEncryption = NO`, an icon and a
+  first-run setup screen. The in-app links point at this repository's latest release (Mac
+  download) and `PRIVACY.md`.
+  In App Review notes, explain that the Mac app is a free direct download (the Mac App Store
+  sandbox forbids input injection), link to it, and mention App Store Review Guideline 4.2.7
+  and existing apps in this category (Remote Mouse, Mobile Mouse).
+- **Mac → direct download.** The Mac App Store sandbox blocks the event injection this app
+  needs, so it ships as a notarized zip attached to a GitHub Release:
+  `SIGN_IDENTITY="Developer ID Application: …" Mac/release.sh` (see the script for the
+  one-time `notarytool` credential setup), then `gh release create v1.0 Mac/build/CouchControl-mac.zip`.
+
+## License
+
+MIT. See `LICENSE`.

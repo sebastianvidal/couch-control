@@ -1,0 +1,214 @@
+import SwiftUI
+
+struct ContentView: View {
+    @StateObject private var client = Client()
+    @StateObject private var settings = AppSettings()
+    @StateObject private var inputState = InputState()
+    @State private var showSettings = false
+    @State private var pairingCode = ""
+    @AppStorage("hasSeenSetup") private var hasSeenSetup = false
+    @State private var showSetup = false
+
+    var body: some View {
+        VStack(spacing: 8) {
+            topBar
+            trackpad
+            mouseButtons
+            KeyStripView(client: client, state: inputState)
+            KeyInputView(client: client, state: inputState)
+                .frame(width: 1, height: 1)
+                .opacity(0.01)
+        }
+        .padding(.horizontal, 8)
+        .padding(.bottom, 8)
+        .background(Color(.systemBackground))
+        .onAppear {
+            client.startBrowsing()
+            UIApplication.shared.isIdleTimerDisabled = true
+            if !hasSeenSetup {
+                showSetup = true
+                hasSeenSetup = true
+            }
+        }
+        .sheet(isPresented: $showSettings) { settingsSheet }
+        .sheet(isPresented: $showSetup) { SetupView() }
+    }
+
+    private var topBar: some View {
+        HStack(spacing: 10) {
+            Circle()
+                .fill(client.isConnected ? Color.green : Color.orange)
+                .frame(width: 9, height: 9)
+            Menu {
+                ForEach(client.services) { service in
+                    Button(service.name) { client.connect(to: service) }
+                }
+                if client.services.isEmpty {
+                    Text("No Macs found yet")
+                }
+            } label: {
+                Text(client.status)
+                    .font(.footnote)
+                    .lineLimit(1)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button { showSetup = true } label: { Image(systemName: "questionmark.circle") }
+            Button { showSettings = true } label: { Image(systemName: "gearshape") }
+        }
+        .padding(.top, 4)
+    }
+
+    private var trackpad: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+            TrackpadView(client: client, settings: settings)
+            switch client.phase {
+            case .paired:
+                EmptyView()
+            case .needsCode, .wrongCode:
+                pairingPrompt
+            default:
+                VStack(spacing: 10) {
+                    Image(systemName: "wifi.exclamationmark").font(.title2)
+                    Text("Open Couch Control on your Mac\n(same Wi-Fi)")
+                        .multilineTextAlignment(.center)
+                        .font(.footnote)
+                    Button("How to set up") { showSetup = true }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                }
+                .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxHeight: .infinity)
+    }
+
+    private var pairingPrompt: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "lock.shield").font(.largeTitle).foregroundStyle(.secondary)
+            Text("Pair with \(client.macName)")
+                .font(.headline)
+            Text("Click the cursor icon in the Mac's menu bar and enter the 6-digit pairing code.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            TextField("000000", text: $pairingCode)
+                .keyboardType(.numberPad)
+                .font(.system(.title, design: .monospaced))
+                .multilineTextAlignment(.center)
+                .textFieldStyle(.roundedBorder)
+                .frame(width: 160)
+                .onChange(of: pairingCode) { _, value in
+                    if value.count >= 6 { submitPairingCode() }
+                }
+                .onSubmit(submitPairingCode)
+            Button("Pair") { submitPairingCode() }
+                .buttonStyle(.borderedProminent)
+                .disabled(pairingCode.count < 6)
+            if client.phase == .wrongCode {
+                Text("That code didn't match. Codes change after each pairing.")
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding(24)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .padding(20)
+    }
+
+    private func submitPairingCode() {
+        guard pairingCode.count >= 6 else { return }
+        client.submitCode(String(pairingCode.prefix(6)))
+        pairingCode = ""
+    }
+
+    private var mouseButtons: some View {
+        HStack(spacing: 8) {
+            HoldButton(label: "Left") { client.send("b l 1") } onUp: { client.send("b l 0") }
+            HoldButton(label: "Right") { client.send("b r 1") } onUp: { client.send("b r 0") }
+        }
+        .frame(height: 38)
+    }
+
+    private var settingsSheet: some View {
+        NavigationStack {
+            Form {
+                Section("Trackpad") {
+                    VStack(alignment: .leading) {
+                        Text("Pointer speed: \(settings.sensitivity, specifier: "%.1f")×")
+                        Slider(value: $settings.sensitivity, in: 0.5...6, step: 0.1)
+                    }
+                    VStack(alignment: .leading) {
+                        Text("Scroll speed: \(settings.scrollSpeed, specifier: "%.1f")×")
+                        Slider(value: $settings.scrollSpeed, in: 0.5...5, step: 0.1)
+                    }
+                    Toggle("Natural scrolling", isOn: $settings.naturalScroll)
+                    Toggle("Tap, then touch-and-hold to drag", isOn: $settings.tapToDrag)
+                }
+                Section("Connection") {
+                    ForEach(client.services) { service in
+                        Button(service.name) { client.connect(to: service); showSettings = false }
+                    }
+                    HStack {
+                        TextField("Mac IP (if Bonjour fails)", text: $settings.manualHost)
+                            .keyboardType(.numbersAndPunctuation)
+                            .autocorrectionDisabled()
+                        Button("Connect") { client.connect(host: settings.manualHost); showSettings = false }
+                            .disabled(settings.manualHost.isEmpty)
+                    }
+                    Text(client.status).font(.footnote).foregroundStyle(.secondary)
+                    if client.isConnected {
+                        Button("Forget \(client.macName)", role: .destructive) {
+                            client.forgetMac()
+                            showSettings = false
+                        }
+                    }
+                }
+                Section("About") {
+                    Button("Setup guide & gestures") { showSettings = false; showSetup = true }
+                    Link("Get the free Mac app", destination: Links.macDownload)
+                    Link("Privacy policy", destination: Links.privacy)
+                }
+            }
+            .navigationTitle("Settings")
+            .toolbar { Button("Done") { showSettings = false } }
+            .safeAreaInset(edge: .bottom) {
+                Text("Couch Control \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .padding(8)
+            }
+        }
+    }
+}
+
+struct HoldButton: View {
+    let label: String
+    let onDown: () -> Void
+    let onUp: () -> Void
+    @State private var pressed = false
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(pressed ? Color.accentColor : Color(.secondarySystemBackground))
+            Text(label)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(pressed ? Color.white : Color.primary)
+        }
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    if !pressed { pressed = true; onDown() }
+                }
+                .onEnded { _ in
+                    pressed = false
+                    onUp()
+                }
+        )
+    }
+}
