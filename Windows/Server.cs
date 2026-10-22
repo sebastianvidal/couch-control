@@ -121,7 +121,9 @@ sealed class Server
                 }
                 else
                 {
+                    // One guess per connection: say no, then hang up.
                     await Send(stream, "nope");
+                    break;
                 }
             }
         }

@@ -8,7 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
     private let menu = NSMenu()
     private let statusLine = NSMenuItem(title: "Starting…", action: nil, keyEquivalent: "")
-    private let codeLine = NSMenuItem(title: "", action: #selector(showPairingCode), keyEquivalent: "")
+    private let codeLine = NSMenuItem(title: "Pair an iPhone…", action: #selector(showPairingCode), keyEquivalent: "")
     private let addressLine = NSMenuItem(title: "", action: nil, keyEquivalent: "")
     private let axLine = NSMenuItem(title: "", action: #selector(requestAccessibility), keyEquivalent: "")
     private let loginLine = NSMenuItem(title: "Launch at Login", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
@@ -35,6 +35,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         refreshAccessibility(prompt: true)
 
+        pairingWindow.payloadProvider = { [weak self] in self?.pairingPayload() ?? "" }
+        Pairing.shared.onEvent = { [weak self] event in
+            DispatchQueue.main.async {
+                self?.pairingWindow.handle(event)
+                self?.refresh()
+            }
+        }
+
         do {
             let server = try Server(port: servicePort) { [weak self] in
                 DispatchQueue.main.async { self?.refresh() }
@@ -45,6 +53,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             statusLine.title = "Could not start: \(error.localizedDescription)"
         }
         refresh()
+        // `--pair` opens the pairing window at launch (used by automated tests of the pairing flow).
+        if CommandLine.arguments.contains("--pair") { showPairingCode() }
     }
 
     func menuWillOpen(_ menu: NSMenu) {
@@ -54,10 +64,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func refresh() {
         statusLine.title = server?.status ?? statusLine.title
-        codeLine.title = "Pairing code: \(Pairing.shared.code) — show QR…"
-        if pairingWindow.isVisible {
-            pairingWindow.update(payload: pairingPayload(), code: Pairing.shared.code)
-        }
         addressLine.title = "Address: \(localIPv4() ?? "?"):\(servicePort)"
         loginLine.state = SMAppService.mainApp.status == .enabled ? .on : .off
         forgetLine.isEnabled = Pairing.shared.pairedCount > 0
@@ -76,7 +82,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func showPairingCode() {
-        pairingWindow.show(payload: pairingPayload(), code: Pairing.shared.code)
+        pairingWindow.show()
     }
 
     private func pairingPayload() -> String {

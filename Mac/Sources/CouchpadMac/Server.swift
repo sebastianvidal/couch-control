@@ -108,7 +108,10 @@ final class Server {
             send("ok \(token) mac", to: connection)
             report()
         } else {
-            send("nope", to: connection)
+            // One guess per connection: say no, then hang up.
+            connection.send(content: Data("nope\n".utf8), completion: .contentProcessed { [weak self] _ in
+                self?.queue.async { self?.drop(connection) }
+            })
         }
     }
 

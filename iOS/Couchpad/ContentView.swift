@@ -136,7 +136,7 @@ struct ContentView: View {
             Button("Scan QR code instead", systemImage: "qrcode.viewfinder") { showScanner = true }
                 .font(.footnote)
             if client.phase == .wrongCode {
-                Text("That code didn't match. Codes change after each pairing.")
+                Text("That code didn't match or has expired. Open the pairing window on the computer for a fresh one.")
                     .font(.footnote)
                     .foregroundStyle(.red)
                     .multilineTextAlignment(.center)

@@ -43,8 +43,12 @@ Never ship a build whose `swift build` errored; `build.sh` exits non-zero on fai
 - Testing input against the real Mac moves the user's cursor; keep it to a single swipe. Never
   run a stand-in host on port 48123 while the user may be using the app — their phone will
   connect to it.
-- The Mac app's pairing code is printed to stderr on launch; run the binary directly with
-  stderr captured to read it when testing pairing.
+- The Mac app's pairing code is printed to stderr whenever it changes; run the binary directly
+  with stderr captured to read it. Codes are only accepted while the pairing window is open
+  (max 1 minute, one guess per connection, 3 misses rotate + 3 s lockout). Launch with
+  `--pair` to open that window without clicking the menu, e.g. for protocol tests.
+- Planned next security step: encrypted, mutually authenticated sessions (X25519 +
+  ChaCha20-Poly1305, challenge-response on the token). Until then README says so honestly.
 
 ## Commits
 Attribution trailer per the session's reminder. Push to `main` directly; no PRs needed for now.

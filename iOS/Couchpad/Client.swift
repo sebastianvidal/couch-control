@@ -167,7 +167,8 @@ final class Client: ObservableObject {
                     } else if let token = self.token(for: name) {
                         self.sentCredential = .token
                         self.sendRaw("hello \(token)")
-                    } else {
+                    } else if self.phase != .wrongCode {
+                        // (After a wrong code the host hangs up and we reconnect; keep that message.)
                         self.phase = .needsCode
                         self.status = "Enter the code shown on \(name)"
                     }
@@ -276,7 +277,7 @@ final class Client: ObservableObject {
                 status = "\(macName) no longer recognizes this phone"
             case .code:
                 phase = .wrongCode
-                status = "Wrong code. Check the code on \(macName)"
+                status = "Wrong or expired code. Check the pairing window on \(macName)"
             case nil:
                 break
             }

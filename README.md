@@ -66,12 +66,15 @@ Mac's IP (shown in the menu-bar menu) into Settings → Connection on the phone.
 
 ## Pairing
 
-The first time a phone connects, it asks for the 6-digit code shown in the host's menu-bar or
-tray icon. Click "Pairing code" there to get a window with a **QR code** and the digits: scan
-it with the Scan button in the app (or with the iPhone's Camera app, which opens Couch
-Control), or type the digits. The host then gives the phone a token it keeps, so the code is
-never needed again for that phone. The code changes after every pairing. Only phones with a
-token can send input.
+The first time a phone connects, it asks for a 6-digit code. Click "Pair an iPhone…" in the
+host's menu-bar or tray icon to get a window with a **QR code** and the digits: scan it with
+the Scan button in the app (or with the iPhone's Camera app, which opens Couchpad), or type
+the digits. The host then gives the phone a token it keeps, so the code is never needed again
+for that phone. Only phones with a token can send input.
+
+The code is only live while that window is open, for at most one minute, and for one pairing.
+Each connection gets a single guess; three wrong guesses rotate the code and pause pairing for
+a few seconds. Pairing is the only way in: without a token, the host ignores everything.
 
 The QR carries the host's address (`couchpad://pair?name=…&addr=…&port=…&code=…`), so a QR
 pairing also works on networks that block Bonjour; the phone remembers the address and falls
@@ -96,12 +99,21 @@ back to it when discovery finds nothing.
 
 Pointer speed, scroll speed, natural scrolling and tap-to-drag are in the gear menu.
 
+## Security
+
+Everything is on your local network, so the question is who else is on it. Today the
+pairing code is well protected against guessing (see above), but the connection itself is
+plain TCP: on an untrusted network, someone sniffing traffic could capture a phone's token
+and replay it, or impersonate a host by name. Encrypted, mutually authenticated sessions are
+the next planned change. Until then, treat the host like any other service you wouldn't run
+on café Wi‑Fi: quit it there, or "Forget Paired iPhones" afterwards.
+
 ## Protocol
 
 Newline-terminated text lines over TCP. The phone must authenticate first:
 
 ```
-hello <code-or-token>   → host answers  ok <token> mac|windows   or   nope
+hello <code-or-token>   → host answers  ok <token> mac|windows   or   nope (and hangs up)
 ```
 
 Then, one command per line:

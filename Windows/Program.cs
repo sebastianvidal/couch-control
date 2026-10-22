@@ -32,7 +32,7 @@ static class Program
 
         var menu = new ContextMenuStrip();
         statusItem = new ToolStripMenuItem("Starting…") { Enabled = false };
-        codeItem = new ToolStripMenuItem("Pairing code", null, (_, _) => ShowCode());
+        codeItem = new ToolStripMenuItem("Pair an iPhone…", null, (_, _) => ShowCode());
         addressItem = new ToolStripMenuItem("Address") { Enabled = false };
         startupItem = new ToolStripMenuItem("Start with Windows", null, (_, _) => ToggleStartup()) { CheckOnClick = false };
         forgetItem = new ToolStripMenuItem("Forget paired iPhones…", null, (_, _) => ForgetPhones());
@@ -83,8 +83,6 @@ static class Program
     static void Refresh()
     {
         statusItem.Text = server.Status;
-        codeItem.Text = $"Pairing code: {Pairing.Code} — show QR…";
-        if (pairingForm is { Visible: true }) pairingForm.Update(PairingPayload(), Pairing.Code);
         addressItem.Text = $"Address: {LocalIPv4() ?? "?"}:{Port}";
         startupItem.Checked = IsStartupEnabled();
         forgetItem.Enabled = Pairing.PairedCount > 0;
@@ -93,10 +91,8 @@ static class Program
 
     static void ShowCode()
     {
-        pairingForm ??= new PairingForm();
-        pairingForm.Update(PairingPayload(), Pairing.Code);
-        pairingForm.Show();
-        pairingForm.Activate();
+        pairingForm ??= new PairingForm(PairingPayload);
+        pairingForm.ShowPairing();
     }
 
     static string PairingPayload() => PairingUrl.Make(Environment.MachineName, LocalIPv4(), Port, Pairing.Code);
