@@ -109,9 +109,12 @@ Report problems at https://github.com/sebastianvidal/couchpad/issues or via the 
 
 ## Screenshots
 
-`docs/screenshots/01…05.png`, 1320×2868 (6.9" iPhone). Upload in that order to the 6.9"
-slot in App Store Connect; it reuses them for the smaller sizes. Regenerate with
-`python3 Tools/compose-screenshots.py <folder of raw simulator captures> docs/screenshots`
+Two sets, same five images, in upload order:
+- `docs/screenshots/01…05.png` — 1320×2868, for the **large display** (6.9") slot.
+- `docs/screenshots/6.3/01…05.png` — 1206×2622, for the **medium display** (6.1"/6.3") slot,
+  which is the tab App Store Connect shows first.
+
+Regenerate with `python3 Tools/compose-screenshots.py <raw captures> <out dir> large|medium`
 (raw captures: `xcrun simctl io 'iPhone 16 Pro Max' screenshot name.png`).
 
 ## Export compliance

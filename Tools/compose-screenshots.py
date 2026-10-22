@@ -3,9 +3,12 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 # App Store screenshots at the 6.9" size: 1320x2868. Gradient background, caption on top,
 # the real screenshot below with rounded corners and a soft shadow.
-W, H = 1320, 2868
 SHOTS = sys.argv[1]
 OUT = sys.argv[2]
+# Canvas size: "large" = 6.9" iPhone (1320x2868), "medium" = 6.3" iPhone (1206x2622).
+SIZE = sys.argv[3] if len(sys.argv) > 3 else "large"
+W, H = {"large": (1320, 2868), "medium": (1206, 2622)}[SIZE]
+S = W / 1320  # scale factor for type and spacing, designed at the large size
 os.makedirs(OUT, exist_ok=True)
 
 captions = [
@@ -37,7 +40,7 @@ def gradient():
     # A soft accent glow behind the caption.
     glow = Image.new("RGB", (W, H), (0, 0, 0))
     gd = ImageDraw.Draw(glow)
-    gd.ellipse((-200, -500, W + 200, 700), fill=accent)
+    gd.ellipse((-200, int(-500 * S), W + 200, int(700 * S)), fill=accent)
     glow = glow.filter(ImageFilter.GaussianBlur(220))
     return Image.blend(img, Image.composite(glow, img, glow.convert("L").point(lambda v: min(255, v * 2))), 0.35)
 
@@ -54,27 +57,27 @@ for src, dst, headline, sub in captions:
         print("missing", src); continue
     canvas = gradient().convert("RGBA")
     d = ImageDraw.Draw(canvas)
-    y = 170
+    y = int(170 * S)
     for line in headline.split("\n"):
-        f = font(92, bold=True)
+        f = font(int(92 * S), bold=True)
         w = d.textlength(line, font=f)
         d.text(((W - w) / 2, y), line, font=f, fill=(245, 245, 250))
-        y += 108
-    f = font(44)
+        y += int(108 * S)
+    f = font(int(44 * S))
     w = d.textlength(sub, font=f)
-    d.text(((W - w) / 2, y + 14), sub, font=f, fill=(170, 172, 190))
+    d.text(((W - w) / 2, y + int(14 * S)), sub, font=f, fill=(170, 172, 190))
 
     shot = Image.open(path).convert("RGB")
     target_w = int(W * 0.78)
     scale = target_w / shot.width
     shot = shot.resize((target_w, int(shot.height * scale)), Image.LANCZOS)
-    shot = rounded(shot, 110)
+    shot = rounded(shot, int(110 * S))
     x = (W - shot.width) // 2
-    top = y + 150
+    top = y + int(150 * S)
     # Shadow.
     shadow = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     sd = ImageDraw.Draw(shadow)
-    sd.rounded_rectangle((x + 10, top + 40, x + shot.width - 10, top + shot.height + 40), radius=110, fill=(0, 0, 0, 170))
+    sd.rounded_rectangle((x + 10, top + 40, x + shot.width - 10, top + shot.height + 40), radius=int(110 * S), fill=(0, 0, 0, 170))
     shadow = shadow.filter(ImageFilter.GaussianBlur(50))
     canvas = Image.alpha_composite(canvas, shadow)
     canvas.alpha_composite(shot, (x, top))
