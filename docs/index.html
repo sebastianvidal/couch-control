@@ -85,8 +85,37 @@
     <li><strong>Pair.</strong> Open Couchpad on your iPhone on the same Wi‑Fi. It finds the computer; choose "Pair an iPhone…" from the menu-bar or tray icon and scan the QR code the first time.</li>
   </ol>
 
+  <h2 id="security">Security, in plain terms</h2>
+  <p class="muted">A phone that can type on your computer can do anything on it, so this part matters. Here is what Couchpad does about it and why.</p>
+  <div class="features">
+    <div>
+      <h3>Only paired phones get in</h3>
+      <p>Your computer ignores everything from a phone it hasn't paired with. Pairing happens once, with a code you can see on the screen, and you can revoke any phone later with "Forget Paired iPhones."</p>
+    </div>
+    <div>
+      <h3>The code can't be guessed</h3>
+      <p>The 6-digit code only exists while the pairing window is open, for at most a minute, and works once. Each connection gets a single guess; three misses change the code and pause pairing. Someone on your Wi‑Fi trying codes at full speed would manage about twenty per minute against a million.</p>
+    </div>
+    <div>
+      <h3>Everything is encrypted</h3>
+      <p>Every connection starts with a fresh key exchange, like a web browser setting up HTTPS, and everything after it is encrypted. Someone watching the network sees two public keys and a nonce, then noise. Your typing, including passwords, is never readable in transit.</p>
+    </div>
+    <div>
+      <h3>Secrets never travel</h3>
+      <p>The phone never sends its pairing token or the code. It proves it knows them with a cryptographic signature tied to <em>this</em> connection, and the computer proves the same back. A recording can't be replayed, and a fake computer advertising your Mac's name learns nothing and can't pass messages through.</p>
+    </div>
+    <div>
+      <h3>Nothing leaves your network</h3>
+      <p>There is no account, no server and no cloud. The phone finds the computer on your local Wi‑Fi and talks to it directly. If you're not on the same network, nothing can connect.</p>
+    </div>
+    <div>
+      <h3>What it can't protect against</h3>
+      <p>A phone or computer that is itself compromised, or someone who can see your screen while you're pairing and act within that minute. Forgetting a phone on the computer, or the computer on the phone, cuts it off immediately. The full design is in the <a href="https://github.com/sebastianvidal/couchpad#security">README</a>; the code is open for anyone to check.</p>
+    </div>
+  </div>
+
   <h2>Privacy</h2>
-  <p>Couchpad collects no data. It asks for Local Network access to find your computer, and for the camera only when you scan a pairing code. Connections are end-to-end encrypted (ephemeral P-256 key exchange, AES-256-GCM), and neither the pairing code nor a phone's token is ever sent over the network: both sides prove they hold it instead. <a href="privacy.html">Read the privacy policy.</a></p>
+  <p>Couchpad collects no data. It asks for Local Network access to find your computer, and for the camera only when you scan a pairing code. <a href="privacy.html">Read the privacy policy.</a></p>
 
   <h2>Open source</h2>
   <p>All three apps are MIT-licensed in one repository: Swift on iPhone and Mac, C# on Windows, talking a small text protocol over one TCP socket. Issues, ideas and pull requests welcome.</p>
