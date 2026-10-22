@@ -113,3 +113,11 @@ Report problems at https://github.com/sebastianvidal/couchpad/issues or via the 
 slot in App Store Connect; it reuses them for the smaller sizes. Regenerate with
 `python3 Tools/compose-screenshots.py <folder of raw simulator captures> docs/screenshots`
 (raw captures: `xcrun simctl io 'iPhone 16 Pro Max' screenshot name.png`).
+
+## Export compliance
+
+`ITSAppUsesNonExemptEncryption = NO` and no App Encryption Documentation upload. Reason: all
+cryptography is Apple's own (CryptoKit: P-256 key agreement, HKDF-SHA256, AES-256-GCM,
+HMAC-SHA256), used to encrypt a local-network connection; no proprietary or third-party
+cipher code ships in the app. That is the "encryption within Apple's operating system"
+category, which is exempt. Revisit if a crypto library is ever vendored into the iOS app.
