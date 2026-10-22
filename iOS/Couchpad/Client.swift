@@ -1,12 +1,15 @@
+import CryptoKit
 import Foundation
 import Network
 import Combine
 
 let servicePort: UInt16 = 48123
 
-/// Finds computers running Couchpad over Bonjour, keeps one TCP connection open, and
-/// handles pairing: the host wants `hello <code-or-token>` first and answers
-/// `ok <token> <platform>` or `nope`. Tokens are kept per host so the code is only needed once.
+/// Finds computers running Couchpad over Bonjour, keeps one TCP connection open, runs the
+/// protocol v2 handshake (see SecureChannel.swift) so every line is encrypted, and handles
+/// pairing: the phone proves it holds a token (or the pairing code) with an HMAC over the
+/// handshake transcript, and the host proves the same back. Tokens are kept per host so the
+/// code is only needed once.
 ///
 /// Session rules:
 /// - Leaving the app closes the connection cleanly (the host then releases any held keys).
@@ -41,7 +44,11 @@ final class Client: ObservableObject {
     private var browser: NWBrowser?
     private var connection: NWConnection?
     private var receiving = false
-    private var receiveBuffer = Data()
+    private var buffer = FrameBuffer()
+    private var privateKey = P256.KeyAgreement.PrivateKey()
+    private var transcript = Data()
+    private var sendCipher: FrameCipher?
+    private var recvCipher: FrameCipher?
     private var sentCredential: Credential?
     private var pendingCode: String?
     private var retryTask: Task<Void, Never>?
@@ -52,7 +59,7 @@ final class Client: ObservableObject {
     private let queue = DispatchQueue(label: "couchpad.client")
     private let defaults = UserDefaults.standard
 
-    private enum Credential { case token, code }
+    private enum Credential { case token(String), code(String) }
 
     // MARK: Lifecycle
 
@@ -140,7 +147,10 @@ final class Client: ObservableObject {
         retryTask?.cancel()
         connection?.cancel()
         receiving = false
-        receiveBuffer = Data()
+        buffer = FrameBuffer()
+        privateKey = P256.KeyAgreement.PrivateKey()
+        sendCipher = nil
+        recvCipher = nil
         sentCredential = nil
         macName = name
         phase = .connecting
@@ -159,22 +169,11 @@ final class Client: ObservableObject {
                     guard !self.receiving else { return } // the path recovered; the session is already set up
                     self.receiving = true
                     self.receive(on: connection)
-                    if let code = self.pendingCode {
-                        self.pendingCode = nil
-                        self.sentCredential = .code
-                        self.status = "Pairing with \(name)…"
-                        self.sendRaw("hello \(code)")
-                    } else if let token = self.token(for: name) {
-                        self.sentCredential = .token
-                        self.sendRaw("hello \(token)")
-                    } else if self.phase != .wrongCode {
-                        // (After a wrong code the host hangs up and we reconnect; keep that message.)
-                        self.phase = .needsCode
-                        self.status = "Enter the code shown on \(name)"
-                    }
+                    // Handshake: our ephemeral public key, in the clear. Secrets come later, encrypted.
+                    let hello = "v2 \(self.privateKey.publicKey.rawRepresentation.base64EncodedString())\n"
+                    connection.send(content: Data(hello.utf8), completion: .contentProcessed { _ in })
                 case .waiting(let error):
                     // No route yet (Wi-Fi coming back, host restarting). Give it a moment, then retry fresh.
-                    // Not paired while waiting: anything sent now would be queued and arrive before hello.
                     self.phase = .connecting
                     self.status = "Can't reach \(name): \(error.localizedDescription)"
                     self.scheduleRetry(after: 3)
@@ -182,8 +181,8 @@ final class Client: ObservableObject {
                     self.connection = nil
                     self.receiving = false
                     if !self.inBackground {
-                        self.phase = .disconnected
-                        self.status = "Disconnected from \(name)"
+                        if self.phase != .wrongCode && self.phase != .needsCode { self.phase = .disconnected }
+                        if self.phase == .disconnected { self.status = "Disconnected from \(name)" }
                         self.failures += 1
                         self.scheduleRetry(after: min(Double(self.failures), 5))
                     }
@@ -212,7 +211,57 @@ final class Client: ObservableObject {
         }
     }
 
-    // MARK: Pairing
+    // MARK: Handshake and pairing
+
+    /// The host answered our key with its own: derive the session and authenticate inside it.
+    private func completeHandshake(_ line: String) throws {
+        let parts = line.split(separator: " ")
+        guard parts.count == 3, parts[0] == "v2",
+              let hostKey = Data(base64Encoded: String(parts[1])), hostKey.count == 64,
+              let nonce = Data(base64Encoded: String(parts[2])), nonce.count == 16 else {
+            throw CryptoKitError.incorrectParameterSize
+        }
+        let key = try SecureChannel.sessionKey(privateKey: privateKey, peerPublicKey: hostKey, nonce: nonce)
+        transcript = SecureChannel.transcript(clientKey: privateKey.publicKey.rawRepresentation, hostKey: hostKey, nonce: nonce)
+        sendCipher = FrameCipher(key: key, direction: 0)
+        recvCipher = FrameCipher(key: key, direction: 1)
+
+        if let code = pendingCode {
+            pendingCode = nil
+            authenticate(.code(code))
+        } else if let token = token(for: macName) {
+            authenticate(.token(token))
+        } else if phase != .wrongCode {
+            // (After a wrong code the host hangs up and we reconnect; keep that message.)
+            phase = .needsCode
+            status = "Enter the code shown on \(macName)"
+        }
+    }
+
+    private func authenticate(_ credential: Credential) {
+        sentCredential = credential
+        let kind: String, secret: String
+        switch credential {
+        case .token(let t): kind = "token"; secret = t; status = "Connecting to \(macName)…"
+        case .code(let c): kind = "code"; secret = c; status = "Pairing with \(macName)…"
+        }
+        phase = .connecting
+        let proof = SecureChannel.proof(secret: secret, transcript: transcript, side: SecureChannel.clientTag)
+        sendLine("auth \(kind) \(proof.base64EncodedString())")
+    }
+
+    func submitCode(_ code: String) {
+        let trimmed = code.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        if sendCipher != nil, connection != nil {
+            authenticate(.code(trimmed))
+        } else {
+            // The host hung up after a wrong guess; pair on the next connection.
+            pendingCode = trimmed
+            phase = .connecting
+            scheduleRetry(after: 0.1)
+        }
+    }
 
     /// Pairs from a scanned or opened `couchpad://pair?name=&addr=&port=&code=` URL.
     /// Connects straight to the address, so this works even where Bonjour is blocked.
@@ -239,15 +288,6 @@ final class Client: ObservableObject {
         return false
     }
 
-    func submitCode(_ code: String) {
-        let trimmed = code.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, connection != nil else { return }
-        phase = .connecting
-        status = "Pairing with \(macName)…"
-        sentCredential = .code
-        sendRaw("hello \(trimmed)")
-    }
-
     func forgetMac() {
         defaults.removeObject(forKey: tokenKey(macName))
         if preferredName == macName {
@@ -258,14 +298,19 @@ final class Client: ObservableObject {
     }
 
     private func handle(_ line: String) {
-        if line.hasPrefix("ok ") {
-            // "ok <token> [mac|windows]"; older Mac builds send no platform.
-            let parts = line.split(separator: " ")
-            guard parts.count >= 2 else { return }
-            defaults.set(String(parts[1]), forKey: tokenKey(macName))
+        let parts = line.split(separator: " ")
+        if parts.first == "ok", parts.count >= 4, let hostProof = Data(base64Encoded: String(parts[3])) {
+            let token = String(parts[1])
+            // The host must prove it knows the token too; an impostor can't.
+            guard SecureChannel.proofMatches(hostProof, secret: token, transcript: transcript, side: SecureChannel.hostTag) else {
+                status = "\(macName) failed to prove itself; not connecting"
+                connection?.cancel()
+                return
+            }
+            defaults.set(token, forKey: tokenKey(macName))
             preferredName = macName
             defaults.set(macName, forKey: "preferredHost")
-            hostPlatform = parts.count >= 3 && parts[2] == "windows" ? .windows : .mac
+            hostPlatform = parts[2] == "windows" ? .windows : .mac
             phase = .paired
             status = "Connected to \(macName)"
         } else if line == "nope" {
@@ -288,14 +333,23 @@ final class Client: ObservableObject {
     // MARK: I/O
 
     private func receive(on connection: NWConnection) {
-        connection.receive(minimumIncompleteLength: 1, maximumLength: 4096) { [weak self] data, _, isComplete, error in
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
             Task { @MainActor in
                 guard let self, self.connection === connection else { return }
-                if let data { self.receiveBuffer.append(data) }
-                while let newline = self.receiveBuffer.firstIndex(of: 0x0A) {
-                    let line = String(decoding: self.receiveBuffer[self.receiveBuffer.startIndex..<newline], as: UTF8.self)
-                    self.receiveBuffer.removeSubrange(self.receiveBuffer.startIndex...newline)
-                    self.handle(line)
+                if let data { self.buffer.append(data) }
+                do {
+                    if self.recvCipher == nil, let line = self.buffer.nextLine() {
+                        try self.completeHandshake(line)
+                    }
+                    if let cipher = self.recvCipher {
+                        while let body = try self.buffer.next() {
+                            self.handle(try cipher.open(body))
+                        }
+                    }
+                } catch {
+                    self.status = "\(self.macName) isn't speaking Couchpad's protocol"
+                    connection.cancel()
+                    return
                 }
                 if isComplete || error != nil {
                     // The host closed the socket; treat it like a failure so we reconnect.
@@ -310,11 +364,12 @@ final class Client: ObservableObject {
     /// Input commands; dropped until pairing has succeeded.
     func send(_ line: String) {
         guard isConnected, let connection, connection.state == .ready else { return }
-        connection.send(content: Data((line + "\n").utf8), completion: .contentProcessed { _ in })
+        sendLine(line)
     }
 
-    private func sendRaw(_ line: String) {
-        connection?.send(content: Data((line + "\n").utf8), completion: .contentProcessed { _ in })
+    private func sendLine(_ line: String) {
+        guard let connection, let cipher = sendCipher, let frame = try? cipher.seal(line) else { return }
+        connection.send(content: frame, completion: .contentProcessed { _ in })
     }
 
     private func tokenKey(_ name: String) -> String { "token.\(name)" }

@@ -69,16 +69,24 @@ static class Pairing
         }
     }
 
-    /// <summary>Returns a token when <paramref name="credential"/> is an existing token or the live code.</summary>
-    public static string? Authenticate(string credential)
+    /// <summary>The stored token (if any) for which <paramref name="matches"/> is true. The caller
+    /// checks a transcript proof against each candidate; the token itself never travels.</summary>
+    public static string? TokenWhere(Func<string, bool> matches)
+    {
+        lock (Gate) return tokens.FirstOrDefault(matches);
+    }
+
+    /// <summary>A pairing attempt: <paramref name="matches"/> checks the client's proof against the
+    /// live code. Issues and stores a new token on success. Enforces the window, single guess,
+    /// rotation and lockout.</summary>
+    public static string? Pair(Func<string, bool> matches)
     {
         bool rotated = false;
         lock (Gate)
         {
-            if (tokens.Contains(credential)) return credential;
             var now = DateTime.UtcNow;
             if (now >= codeExpires || now < lockedUntil) return null;
-            if (credential == Code)
+            if (matches(Code))
             {
                 var token = Guid.NewGuid().ToString("D").ToUpperInvariant();
                 tokens.Add(token);

@@ -1,14 +1,15 @@
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using Makaretu.Dns;
 
 namespace Couchpad;
 
 /// <summary>
-/// TCP listener advertised over Bonjour (mDNS). The first line from a phone must be
-/// <c>hello &lt;code-or-token&gt;</c>; we answer <c>ok &lt;token&gt; windows</c> or <c>nope</c>.
-/// After that each line is one input command (see Injector.Handle).
+/// TCP listener advertised over Bonjour (mDNS), speaking protocol v2 (see SecureChannel.cs):
+/// a plain-text key exchange, then every line encrypted. A phone must authenticate inside the
+/// channel with a proof over the transcript before any input is accepted.
 /// </summary>
 sealed class Server
 {
@@ -91,48 +92,86 @@ sealed class Server
 
     async Task Serve(TcpClient client, CancellationToken token)
     {
+        var buffer = new FrameBuffer();
+        var chunk = new byte[65536];
+        using var privateKey = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
+        FrameCipher? send = null, recv = null;
+        byte[] transcript = Array.Empty<byte>();
+        var isAuthenticated = false;
         try
         {
             using var stream = client.GetStream();
-            using var reader = new StreamReader(stream, new UTF8Encoding(false));
-            var isAuthenticated = false;
             while (!token.IsCancellationRequested)
             {
-                var line = await reader.ReadLineAsync(token);
-                if (line == null) break;
+                var n = await stream.ReadAsync(chunk, token);
+                if (n == 0) break;
+                buffer.Append(chunk.AsSpan(0, n));
 
-                if (isAuthenticated)
+                if (send == null)
                 {
-                    Injector.Handle(line);
-                    continue;
+                    // Plain-text handshake: exactly one line, "v2 <client public key>".
+                    var line = buffer.NextLine();
+                    if (line == null) continue;
+                    var parts = line.Split(' ');
+                    if (parts.Length != 2 || parts[0] != "v2") break;
+                    var clientKey = Convert.FromBase64String(parts[1]);
+                    var nonce = RandomNumberGenerator.GetBytes(16);
+                    var hostKey = SecureChannel.RawPublicKey(privateKey);
+                    var key = SecureChannel.SessionKey(privateKey, clientKey, nonce);
+                    transcript = SecureChannel.Transcript(clientKey, hostKey, nonce);
+                    send = new FrameCipher(key, 1);
+                    recv = new FrameCipher(key, 0);
+                    await stream.WriteAsync(Encoding.UTF8.GetBytes($"v2 {Convert.ToBase64String(hostKey)} {Convert.ToBase64String(nonce)}\n"), token);
                 }
 
-                // Input that arrives before the handshake (queued on the phone while its socket
-                // was reconnecting) is dropped, not refused: "nope" is only for a bad hello,
-                // because the phone treats it as "this host forgot me" and discards its token.
-                if (!line.StartsWith("hello ", StringComparison.Ordinal)) continue;
-                var issued = Pairing.Authenticate(line[6..].Trim());
-                if (issued != null)
+                byte[]? body;
+                while ((body = buffer.NextFrame()) != null)
                 {
-                    isAuthenticated = true;
-                    lock (gate) authenticated.Add(client);
-                    await Send(stream, $"ok {issued} windows");
-                    Report();
-                }
-                else
-                {
-                    // One guess per connection: say no, then hang up.
-                    await Send(stream, "nope");
-                    break;
+                    var line = recv!.Open(body);
+                    if (isAuthenticated)
+                    {
+                        Injector.Handle(line);
+                        continue;
+                    }
+
+                    // Anything before "auth" is dropped, never refused: a refusal makes the phone discard its token.
+                    var parts = line.Split(' ');
+                    if (parts.Length != 3 || parts[0] != "auth") continue;
+                    var proof = Convert.FromBase64String(parts[2]);
+                    var captured = transcript;
+                    bool Matches(string secret) => SecureChannel.ProofMatches(proof, secret, captured, SecureChannel.ClientTag);
+                    var issued = parts[1] switch
+                    {
+                        "token" => Pairing.TokenWhere(Matches),
+                        "code" => Pairing.Pair(Matches),
+                        _ => null,
+                    };
+                    if (issued != null)
+                    {
+                        isAuthenticated = true;
+                        lock (gate) authenticated.Add(client);
+                        var hostProof = SecureChannel.Proof(issued, transcript, SecureChannel.HostTag);
+                        await stream.WriteAsync(send.Seal($"ok {issued} windows {Convert.ToBase64String(hostProof)}"), token);
+                        Report();
+                    }
+                    else
+                    {
+                        // One guess per connection: say no, then hang up.
+                        await stream.WriteAsync(send.Seal("nope"), token);
+                        goto done;
+                    }
                 }
             }
+            done: ;
         }
-        catch (Exception) { /* connection went away */ }
-        finally { Drop(client); }
+        catch (Exception) { /* connection went away, or not a Couchpad peer */ }
+        finally
+        {
+            send?.Dispose();
+            recv?.Dispose();
+            Drop(client);
+        }
     }
-
-    static Task Send(NetworkStream stream, string line) =>
-        stream.WriteAsync(Encoding.UTF8.GetBytes(line + "\n")).AsTask();
 
     void Drop(TcpClient client)
     {

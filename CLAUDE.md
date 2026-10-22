@@ -47,8 +47,12 @@ Never ship a build whose `swift build` errored; `build.sh` exits non-zero on fai
   with stderr captured to read it. Codes are only accepted while the pairing window is open
   (max 1 minute, one guess per connection, 3 misses rotate + 3 s lockout). Launch with
   `--pair` to open that window without clicking the menu, e.g. for protocol tests.
-- Planned next security step: encrypted, mutually authenticated sessions (X25519 +
-  ChaCha20-Poly1305, challenge-response on the token). Until then README says so honestly.
+- Wire protocol is v2: P-256 ECDH + HKDF + AES-256-GCM frames, HMAC proofs over the
+  transcript instead of sending tokens/codes. The Swift implementation is one file,
+  `Shared/SecureChannel.swift`, symlinked into the Mac package and the iOS folder; the C# port
+  is `Windows/SecureChannel.cs` and must stay byte-compatible (nonce layout, AAD, HKDF info).
+  To watch the wire during tests, run a logging TCP proxy on another port and pair through it
+  with a `couchpad://pair?...&port=<proxy>` URL; expect only the two `v2` lines in the clear.
 
 ## Commits
 Attribution trailer per the session's reminder. Push to `main` directly; no PRs needed for now.

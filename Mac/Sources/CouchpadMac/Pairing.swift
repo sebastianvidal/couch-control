@@ -64,12 +64,19 @@ final class Pairing {
         lock.unlock()
     }
 
-    /// Returns a token when `credential` is an existing token, or the live code.
-    func authenticate(_ credential: String) -> String? {
+    /// The stored token (if any) for which `matches` is true. The caller checks a transcript
+    /// proof against each candidate; the token itself never travels.
+    func token(where matches: (String) -> Bool) -> String? {
+        lock.lock(); defer { lock.unlock() }
+        return tokens.first(where: matches)
+    }
+
+    /// A pairing attempt: `matches` checks the client's proof against the live code. Issues
+    /// and stores a new token on success. Enforces the window, single guess, rotation, lockout.
+    func pair(codeMatches matches: (String) -> Bool) -> String? {
         lock.lock()
-        if tokens.contains(credential) { lock.unlock(); return credential }
         guard Date() < codeExpires, Date() >= lockedUntil else { lock.unlock(); return nil }
-        if credential == code {
+        if matches(code) {
             let token = UUID().uuidString
             tokens.insert(token)
             codeExpires = .distantPast   // one pairing per window

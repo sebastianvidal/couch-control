@@ -101,22 +101,38 @@ Pointer speed, scroll speed, natural scrolling and tap-to-drag are in the gear m
 
 ## Security
 
-Everything is on your local network, so the question is who else is on it. Today the
-pairing code is well protected against guessing (see above), but the connection itself is
-plain TCP: on an untrusted network, someone sniffing traffic could capture a phone's token
-and replay it, or impersonate a host by name. Encrypted, mutually authenticated sessions are
-the next planned change. Until then, treat the host like any other service you wouldn't run
-on café Wi‑Fi: quit it there, or "Forget Paired iPhones" afterwards.
+Everything stays on your local network; the design assumes other people may be on it too.
+
+- **Encrypted sessions.** Every connection starts with an ephemeral P-256 key exchange; the
+  session key comes from HKDF and every line after that is AES-256-GCM. An eavesdropper sees
+  two public keys and a nonce, then ciphertext.
+- **Nothing secret is ever sent.** The phone proves it holds its token (or the pairing code)
+  with an HMAC over the handshake transcript, and the host proves it holds the same token
+  back. Captured traffic can't be replayed (fresh keys each time) and an impostor advertising
+  your computer's name can neither learn the token nor relay, because the transcript binds
+  both sides' keys.
+- **Pairing codes are hard to guess.** Live only while the pairing window is open (at most a
+  minute, one pairing), one guess per connection, three misses rotate the code and pause
+  pairing. Because a new token travels inside the encrypted channel, recording a pairing and
+  cracking the 6-digit code afterwards yields nothing; only an attacker active during that
+  minute who already knows the code could interpose.
+- **What's left:** a paired phone or host that is itself compromised. "Forget Paired
+  iPhones" on the host and "Forget this computer" on the phone revoke access.
 
 ## Protocol
 
-Newline-terminated text lines over TCP. The phone must authenticate first:
+Protocol v2 (see `Shared/SecureChannel.swift` and `Windows/SecureChannel.cs`):
 
 ```
-hello <code-or-token>   → host answers  ok <token> mac|windows   or   nope (and hangs up)
+phone → host   v2 <P-256 public key, base64>                      (plain text line)
+host  → phone  v2 <P-256 public key, base64> <16-byte nonce, base64>
+                → both derive sessionKey = HKDF-SHA256(ECDH, salt: nonce, info: "couchpad v2 session")
+                → every message from here is a frame: 4-byte length ‖ AES-256-GCM(line)
+phone → host   auth token|code <HMAC-SHA256(secret, transcript ‖ "client")>
+host  → phone  ok <token> mac|windows <HMAC-SHA256(token, transcript ‖ "host")>   or   nope (then hangs up)
 ```
 
-Then, one command per line:
+Inside the channel, one command per line:
 
 ```
 m dx dy      move (dx/dy also sent as raw mouse deltas, which is what games read)
