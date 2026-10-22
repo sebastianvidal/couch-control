@@ -30,6 +30,7 @@ struct ContentView: View {
             if !hasSeenSetup {
                 showSetup = true
                 hasSeenSetup = true
+                inputState.suspended = true
             }
         }
         .sheet(isPresented: $showSettings) { settingsSheet }
@@ -41,6 +42,9 @@ struct ContentView: View {
             }
         }
         .onOpenURL { url in client.pair(using: url) }
+        .onChange(of: showSetup) { _, _ in syncKeyboardSuspension() }
+        .onChange(of: showSettings) { _, _ in syncKeyboardSuspension() }
+        .onChange(of: showScanner) { _, _ in syncKeyboardSuspension() }
         .onChange(of: scenePhase) { _, newPhase in
             switch newPhase {
             case .background: client.appDidEnterBackground()
@@ -115,8 +119,8 @@ struct ContentView: View {
             Text("Pair with \(client.macName)")
                 .font(.headline)
             Text(client.hostPlatform == .windows
-                 ? "Click the Couchpad icon in the Windows system tray and enter the 6-digit pairing code."
-                 : "Click the cursor icon in the Mac's menu bar and enter the 6-digit pairing code.")
+                 ? "Choose \"Pair an iPhone…\" from the Couchpad icon in the Windows system tray, then scan the QR code or type the 6 digits."
+                 : "Choose \"Pair an iPhone…\" from the cursor icon in the Mac's menu bar, then scan the QR code or type the 6 digits.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -145,6 +149,11 @@ struct ContentView: View {
         .padding(24)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .padding(20)
+    }
+
+    /// The iOS keyboard would otherwise sit on top of any sheet we present.
+    private func syncKeyboardSuspension() {
+        inputState.suspended = showSetup || showSettings || showScanner
     }
 
     private func submitPairingCode() {
@@ -200,16 +209,13 @@ struct ContentView: View {
                     Button("Setup guide & gestures") { showSettings = false; showSetup = true }
                     Link("Get the free Mac / Windows app", destination: Links.macDownload)
                     Link("Privacy policy", destination: Links.privacy)
+                    Text("Couchpad \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
             }
             .navigationTitle("Settings")
             .toolbar { Button("Done") { showSettings = false } }
-            .safeAreaInset(edge: .bottom) {
-                Text("Couchpad \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-                    .padding(8)
-            }
         }
     }
 }

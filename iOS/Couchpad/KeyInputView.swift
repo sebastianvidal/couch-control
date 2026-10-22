@@ -7,6 +7,8 @@ import Combine
 final class InputState: ObservableObject {
     @Published var heldModifiers = Set<Int>()
     @Published var keyboardShown = true
+    /// True while a sheet (setup, settings, scanner) is presented: the keyboard stays down.
+    @Published var suspended = false
 }
 
 /// Invisible view that owns the iOS keyboard and forwards what is typed.
@@ -22,8 +24,9 @@ struct KeyInputView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: KeyInputUIView, context: Context) {
+        let wanted = state.keyboardShown && !state.suspended
         DispatchQueue.main.async {
-            if state.keyboardShown {
+            if wanted {
                 if !uiView.isFirstResponder { uiView.becomeFirstResponder() }
             } else if uiView.isFirstResponder {
                 uiView.resignFirstResponder()
@@ -65,7 +68,7 @@ final class KeyInputUIView: UITextField, UITextFieldDelegate {
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
-        guard window != nil, inputState?.keyboardShown != false else { return }
+        guard window != nil, inputState?.keyboardShown != false, inputState?.suspended != true else { return }
         DispatchQueue.main.async { self.becomeFirstResponder() }
     }
 

@@ -106,3 +106,10 @@ Everything stays on your local network. No account, no data collected.
 • Games: use the "F-keys & hold keys" strip for WASD; tell me which games worked and which didn't.
 
 Report problems at https://github.com/sebastianvidal/couchpad/issues or via the TestFlight feedback button.
+
+## Screenshots
+
+`docs/screenshots/01…05.png`, 1320×2868 (6.9" iPhone). Upload in that order to the 6.9"
+slot in App Store Connect; it reuses them for the smaller sizes. Regenerate with
+`python3 Tools/compose-screenshots.py <folder of raw simulator captures> docs/screenshots`
+(raw captures: `xcrun simctl io 'iPhone 16 Pro Max' screenshot name.png`).
