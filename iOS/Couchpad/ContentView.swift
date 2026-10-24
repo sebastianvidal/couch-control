@@ -206,8 +206,15 @@ struct ContentView: View {
                         Slider(value: $settings.controllerLookSpeed, in: 2...30, step: 1)
                     }
                     Toggle("Invert look Y", isOn: $settings.controllerInvertY)
-                    Text("Left stick / D-pad: WASD / arrows · Right stick: mouse look · A space · B ctrl · X r · Y f · L1 q · R1 e · L2 right-click · R2 left-click · L3 shift · R3 v · Menu esc · Options tab")
-                        .font(.footnote).foregroundStyle(.secondary)
+                    NavigationLink {
+                        ControllerBindingsView(controller: controller)
+                    } label: {
+                        HStack {
+                            Text("Bindings")
+                            Spacer()
+                            Text(controller.profile.name).foregroundStyle(.secondary)
+                        }
+                    }
                 }
                 Section("Connection") {
                     ForEach(client.services) { service in

@@ -8,13 +8,17 @@ import GameController
 /// plays from the couch. The computer never sees a gamepad: macOS has no public way to
 /// create one, so this is the honest version.
 ///
-/// Default profile, FPS-shaped:
-///   left stick / d-pad → W A S D / arrows      right stick → mouse look
-///   A space · B ctrl · X r · Y f · L1 q · R1 e · L2 right-click · R2 left-click
-///   L3 shift · R3 v · menu esc · options tab
+/// What each control does comes from the user's ControllerProfile (presets: FPS, MapleStory,
+/// Arrows), edited in Settings → Controller bindings.
 @MainActor
 final class ControllerBridge: ObservableObject {
     @Published private(set) var controllerName: String?
+    @Published var profile = ControllerProfile.load() {
+        didSet {
+            profile.save()
+            releaseAll()   // old bindings may be held; start clean under the new ones
+        }
+    }
 
     weak var client: Client?
     weak var settings: AppSettings?
@@ -26,13 +30,6 @@ final class ControllerBridge: ObservableObject {
     private var rightDown = false
     private var lookRemainder = CGPoint.zero
     private var observers: [NSObjectProtocol] = []
-
-    // macOS virtual keycodes.
-    private enum Key {
-        static let w = 13, a = 0, s = 1, d = 2, q = 12, e = 14, r = 15, f = 3, v = 9
-        static let space = 49, shift = 56, control = 59, esc = 53, tab = 48
-        static let left = 123, right = 124, down = 125, up = 126
-    }
 
     init() {
         let center = NotificationCenter.default
@@ -88,44 +85,67 @@ final class ControllerBridge: ObservableObject {
             return
         }
 
-        // Digital keys: buttons plus the left stick quantised with hysteresis-free 0.5 threshold.
-        var wanted = Set<Int>()
+        var keys = Set<Int>()
+        var left = false, right = false
+        var look = CGPoint.zero
+
+        func apply(_ control: Control, _ pressed: Bool) {
+            guard pressed else { return }
+            switch profile[control] {
+            case .none, .mouseLook: break
+            case .key(let code): keys.insert(code)
+            case .mouseLeft: left = true
+            case .mouseRight: right = true
+            }
+        }
+
         let ls = pad.leftThumbstick
-        if ls.yAxis.value > 0.5 { wanted.insert(Key.w) }
-        if ls.yAxis.value < -0.5 { wanted.insert(Key.s) }
-        if ls.xAxis.value < -0.5 { wanted.insert(Key.a) }
-        if ls.xAxis.value > 0.5 { wanted.insert(Key.d) }
-        if pad.dpad.up.isPressed { wanted.insert(Key.up) }
-        if pad.dpad.down.isPressed { wanted.insert(Key.down) }
-        if pad.dpad.left.isPressed { wanted.insert(Key.left) }
-        if pad.dpad.right.isPressed { wanted.insert(Key.right) }
-        if pad.buttonA.isPressed { wanted.insert(Key.space) }
-        if pad.buttonB.isPressed { wanted.insert(Key.control) }
-        if pad.buttonX.isPressed { wanted.insert(Key.r) }
-        if pad.buttonY.isPressed { wanted.insert(Key.f) }
-        if pad.leftShoulder.isPressed { wanted.insert(Key.q) }
-        if pad.rightShoulder.isPressed { wanted.insert(Key.e) }
-        if pad.leftThumbstickButton?.isPressed == true { wanted.insert(Key.shift) }
-        if pad.rightThumbstickButton?.isPressed == true { wanted.insert(Key.v) }
-        if pad.buttonMenu.isPressed { wanted.insert(Key.esc) }
-        if pad.buttonOptions?.isPressed == true { wanted.insert(Key.tab) }
+        apply(.leftStickUp, ls.yAxis.value > 0.5)
+        apply(.leftStickDown, ls.yAxis.value < -0.5)
+        apply(.leftStickLeft, ls.xAxis.value < -0.5)
+        apply(.leftStickRight, ls.xAxis.value > 0.5)
+        apply(.dpadUp, pad.dpad.up.isPressed)
+        apply(.dpadDown, pad.dpad.down.isPressed)
+        apply(.dpadLeft, pad.dpad.left.isPressed)
+        apply(.dpadRight, pad.dpad.right.isPressed)
+        apply(.a, pad.buttonA.isPressed)
+        apply(.b, pad.buttonB.isPressed)
+        apply(.x, pad.buttonX.isPressed)
+        apply(.y, pad.buttonY.isPressed)
+        apply(.l1, pad.leftShoulder.isPressed)
+        apply(.r1, pad.rightShoulder.isPressed)
+        apply(.l2, pad.leftTrigger.isPressed)
+        apply(.r2, pad.rightTrigger.isPressed)
+        apply(.l3, pad.leftThumbstickButton?.isPressed == true)
+        apply(.r3, pad.rightThumbstickButton?.isPressed == true)
+        apply(.menu, pad.buttonMenu.isPressed)
+        apply(.options, pad.buttonOptions?.isPressed == true)
 
-        for code in heldKeys.subtracting(wanted) { client.send("k \(code) 0") }
-        for code in wanted.subtracting(heldKeys) { client.send("k \(code) 1") }
-        heldKeys = wanted
-
-        // Triggers as mouse buttons: R2 fires, L2 aims.
-        let fire = pad.rightTrigger.isPressed
-        let aim = pad.leftTrigger.isPressed
-        if fire != leftDown { client.send("b l \(fire ? 1 : 0)"); leftDown = fire }
-        if aim != rightDown { client.send("b r \(aim ? 1 : 0)"); rightDown = aim }
-
-        // Right stick as mouse look: deadzone, then a squared curve so small deflections are fine.
+        // The right stick is either mouse look or nothing (bind it to a key to use it as a button).
         let rs = pad.rightThumbstick
-        let speed = CGFloat(settings?.controllerLookSpeed ?? 10)
-        let invert: CGFloat = settings?.controllerInvertY == true ? 1 : -1
-        let dx = curve(CGFloat(rs.xAxis.value)) * speed + lookRemainder.x
-        let dy = curve(CGFloat(rs.yAxis.value)) * speed * invert + lookRemainder.y
+        switch profile[.rightStick] {
+        case .mouseLook:
+            let speed = CGFloat(settings?.controllerLookSpeed ?? 10)
+            let invert: CGFloat = settings?.controllerInvertY == true ? 1 : -1
+            look = CGPoint(x: curve(CGFloat(rs.xAxis.value)) * speed, y: curve(CGFloat(rs.yAxis.value)) * speed * invert)
+        case .key(let code):
+            if abs(rs.xAxis.value) > 0.5 || abs(rs.yAxis.value) > 0.5 { keys.insert(code) }
+        case .mouseLeft:
+            if abs(rs.xAxis.value) > 0.5 || abs(rs.yAxis.value) > 0.5 { left = true }
+        case .mouseRight:
+            if abs(rs.xAxis.value) > 0.5 || abs(rs.yAxis.value) > 0.5 { right = true }
+        case .none:
+            break
+        }
+
+        for code in heldKeys.subtracting(keys) { client.send("k \(code) 0") }
+        for code in keys.subtracting(heldKeys) { client.send("k \(code) 1") }
+        heldKeys = keys
+        if left != leftDown { client.send("b l \(left ? 1 : 0)"); leftDown = left }
+        if right != rightDown { client.send("b r \(right ? 1 : 0)"); rightDown = right }
+
+        let dx = look.x + lookRemainder.x
+        let dy = look.y + lookRemainder.y
         let ix = Int(dx.rounded(.towardZero))
         let iy = Int(dy.rounded(.towardZero))
         lookRemainder = CGPoint(x: dx - CGFloat(ix), y: dy - CGFloat(iy))

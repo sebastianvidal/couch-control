@@ -40,7 +40,7 @@ BUILT FOR GAMES
 Pointer movement is sent as raw mouse motion, which is what games use for camera look, and keys are sent as real presses that stay held. Menus, strategy, point-and-click, launchers, Steam Big Picture: all from the couch.
 
 CONTROLLERS
-Plug a Backbone into the phone, or pair a Bluetooth controller to it, and Couchpad forwards it to the computer: left stick WASD, right stick mouse look, triggers as mouse buttons, face buttons as keys. Works with any game that accepts keyboard and mouse.
+Plug a Backbone into the phone, or pair a Bluetooth controller to it, and Couchpad forwards it to the computer as keys and mouse. Every button and stick direction is bindable, with presets for FPS games (WASD + mouse look), MapleStory and arrow-key games. Works with any game that accepts keyboard and mouse.
 
 PRIVATE BY DESIGN
 Couchpad collects no data. It asks for Local Network access to find your computer and for the camera only when you scan a pairing code. Only phones you've paired can send input, and you can forget a phone from the computer at any time.

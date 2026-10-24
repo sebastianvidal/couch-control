@@ -50,7 +50,7 @@ carries the Mac's address, or type it into Settings → Connection on the phone.
 | ⇧ ⌃ ⌥ ⌘ fn                 | Toggle: held until tapped again; typed letters become shortcuts (⌘C etc.) |
 | On a Windows host          | The same keys show as Ctrl / Alt / Win; fn is hidden |
 | Keyboard button            | Hide / show the iOS keyboard to enlarge the trackpad |
-| Backbone / Bluetooth controller | Forwarded as keys and mouse: left stick WASD, right stick mouse look, A space, B ctrl, X r, Y f, L1 q, R1 e, L2 right-click, R2 left-click, L3 shift, R3 v, Menu esc, Options tab |
+| Backbone / Bluetooth controller | Forwarded as keys and mouse. Every button and stick direction is bindable in Settings → Controller → Bindings; presets: FPS (WASD + mouse look), MapleStory (arrows, alt jump, ctrl attack), Arrows |
 
 Pointer speed, scroll speed, natural scrolling, tap-to-drag, three-finger swipes and
 controller look speed are in the gear menu.
