@@ -4,6 +4,7 @@ struct ContentView: View {
     @StateObject private var client = Client()
     @StateObject private var settings = AppSettings()
     @StateObject private var inputState = InputState()
+    @StateObject private var controller = ControllerBridge()
     @State private var showSettings = false
     @State private var pairingCode = ""
     @AppStorage("hasSeenSetup") private var hasSeenSetup = false
@@ -25,6 +26,8 @@ struct ContentView: View {
         .padding(.bottom, 8)
         .background(Color(.systemBackground))
         .onAppear {
+            controller.client = client
+            controller.settings = settings
             client.startBrowsing()
             UIApplication.shared.isIdleTimerDisabled = true
             if !hasSeenSetup {
@@ -47,7 +50,7 @@ struct ContentView: View {
         .onChange(of: showScanner) { _, _ in syncKeyboardSuspension() }
         .onChange(of: scenePhase) { _, newPhase in
             switch newPhase {
-            case .background: client.appDidEnterBackground()
+            case .background: controller.releaseAll(); client.appDidEnterBackground()
             case .active: client.appDidBecomeActive()
             default: break
             }
@@ -73,6 +76,11 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
+            if controller.controllerName != nil {
+                Image(systemName: "gamecontroller.fill")
+                    .foregroundStyle(.green)
+                    .accessibilityLabel("Controller connected")
+            }
             Button { showSetup = true } label: { Image(systemName: "questionmark.circle") }
             Button { showSettings = true } label: { Image(systemName: "gearshape") }
         }
@@ -185,6 +193,21 @@ struct ContentView: View {
                     Toggle("Natural scrolling", isOn: $settings.naturalScroll)
                     Toggle("Tap, then touch-and-hold to drag", isOn: $settings.tapToDrag)
                     Toggle("Three-finger swipes (Mission Control, Spaces)", isOn: $settings.threeFingerSwipes)
+                }
+                Section("Controller") {
+                    if let name = controller.controllerName {
+                        Label(name, systemImage: "gamecontroller.fill").foregroundStyle(.green)
+                    } else {
+                        Text("None connected. A Backbone or Bluetooth controller is forwarded to the computer as keys and mouse.")
+                            .font(.footnote).foregroundStyle(.secondary)
+                    }
+                    VStack(alignment: .leading) {
+                        Text("Look speed (right stick): \(settings.controllerLookSpeed, specifier: "%.0f")")
+                        Slider(value: $settings.controllerLookSpeed, in: 2...30, step: 1)
+                    }
+                    Toggle("Invert look Y", isOn: $settings.controllerInvertY)
+                    Text("Left stick / D-pad: WASD / arrows · Right stick: mouse look · A space · B ctrl · X r · Y f · L1 q · R1 e · L2 right-click · R2 left-click · L3 shift · R3 v · Menu esc · Options tab")
+                        .font(.footnote).foregroundStyle(.secondary)
                 }
                 Section("Connection") {
                     ForEach(client.services) { service in

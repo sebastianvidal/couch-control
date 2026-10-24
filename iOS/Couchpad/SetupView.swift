@@ -44,6 +44,7 @@ struct SetupView: View {
                     row("square.grid.3x3", "Three-finger swipe", "Up: Mission Control · Down: App Exposé · Left/right: switch Spaces")
                     row("keyboard", "Keyboard", "Types on the Mac. esc, tab, arrows and ⌘⌥⌃⇧ are in the strip above it")
                     row("gamecontroller", "Hold keys", "Expand the strip for WASD, space and F-keys that stay down while touched")
+                    row("gamecontroller.fill", "Backbone or Bluetooth controller", "Plug it into the phone: sticks and buttons become WASD, mouse look and keys on the computer")
                 }
 
                 Section("Privacy") {
